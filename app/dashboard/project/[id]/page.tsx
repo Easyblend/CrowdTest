@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { ArrowLeft, ExternalLink, AlertCircle } from 'lucide-react';
 import BugReportModal from '@/app/component/BugReportModal';
 import BugCard from '@/app/component/BugCard';
+import toast from 'react-hot-toast';
+import { FullScreenLoader } from '@/app/component/FullScreenLoader';
 
 interface Bug {
     id: number;
@@ -67,19 +69,13 @@ export default function ProjectPage() {
                 const data: User = await res.json();
                 setUser(data);
             } catch (err) {
-                console.error(err);
+               toast.error("This didn't work.")
             }
         }
         loadUser();
     }, []);
 
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-pulse text-center">
-                <div className="text-slate-400 text-lg">Loading project...</div>
-            </div>
-        </div>
-    );
+    if (loading) return FullScreenLoader();
 
     if (!project) return (
         <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">

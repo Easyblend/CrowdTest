@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import AddProjectModal from '../component/AddProjectModal';
 import LogoutBtn from '../component/LogoutBtn';
 import ProjectCard from '../component/ProjectCard';
+import { FullScreenLoader } from '../component/FullScreenLoader';
 
 interface Bug {
   id: number;
@@ -45,7 +46,9 @@ export default function DashboardPage() {
     setProjects([project, ...projects]);
   };
 
-  if (loading) return <p className="p-4 text-center text-gray-500">Loading projects...</p>;
+  if (loading) {
+    return FullScreenLoader();
+  }
 
   return (
     <main className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
