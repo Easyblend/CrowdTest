@@ -66,7 +66,6 @@ export default function ProjectPage() {
                 if (!res.ok) throw new Error('Failed to fetch user');
                 const data: User = await res.json();
                 setUser(data);
-                console.log('Current user:', data);
             } catch (err) {
                 console.error(err);
             }
