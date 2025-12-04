@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   if (!match) return new Response(JSON.stringify({ error: "Invalid credentials" }), { status: 400 })
 
   const token = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET!,
     { expiresIn: "7d" }
   )
