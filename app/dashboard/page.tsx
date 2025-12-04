@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AddProjectModal from '../component/AddProjectModal';
 import LogoutBtn from '../component/LogoutBtn';
+import ProjectCard from '../component/ProjectCard';
 
 interface Bug {
   id: number;
@@ -47,7 +48,7 @@ export default function DashboardPage() {
   if (loading) return <p className="p-4 text-center text-gray-500">Loading projects...</p>;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <main className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
       <div className="p-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -69,24 +70,7 @@ export default function DashboardPage() {
 
           {/* Existing Projects */}
           {projects.map((project) => (
-            <div key={project.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:border-slate-300 transition-all duration-200">
-              <h2 className="text-lg font-semibold text-slate-900 mb-2">{project.name}</h2>
-              {project.description && <p className="text-slate-600 text-sm mb-3">{project.description}</p>}
-              <a
-                href={project.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 font-medium text-sm mb-4 block hover:underline"
-              >
-                Visit Project →
-              </a>
-              <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                <span className="text-slate-600 text-sm font-medium">Bugs reported:</span>
-                <span className="inline-flex items-center justify-center bg-red-50 text-red-700 font-semibold rounded-full w-8 h-8">
-                  {project.bugs.length}
-                </span>
-              </div>
-            </div>
+            <ProjectCard key={project.id} project={project} />
           ))}
         </div>
       </div>
