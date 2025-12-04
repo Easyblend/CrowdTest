@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { getUserFromCookies } from '@/app/lib/auth';
+import { getUserFromRequest } from '@/app/lib/auth';
 
 export async function GET(req: NextRequest) {
-  const user = await getUserFromCookies();
+  const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const projects = await prisma.project.findMany({
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getUserFromCookies();
+  const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { name, url, description } = await req.json();
