@@ -24,45 +24,63 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
         onClose();
     };
 
+    const severityColors = {
+        LOW: 'border-l-4 border-green-500 bg-green-50',
+        MEDIUM: 'border-l-4 border-yellow-500 bg-yellow-50',
+        HIGH: 'border-l-4 border-red-500 bg-red-50',
+    };
+
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-8 rounded-xl max-w-md w-full shadow-lg">
-                <h3 className="text-2xl font-semibold mb-6 text-gray-800">Report a Bug</h3>
+        <div className="fixed inset-0 bg-gray-800/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-lg max-w-md w-full shadow-lg border border-gray-200">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-lg">🐞</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-800">Report a Bug</h3>
+                </div>
+                
                 <input
                     type="text"
-                    placeholder="Bug title"
+                    placeholder="Give it a catchy title..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full mb-4 p-3 border border-gray-300 rounded bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full mb-4 p-3 border-2 border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                 />
+                
                 <textarea
-                    placeholder="Bug description"
+                    placeholder="Describe what went wrong..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full mb-4 p-3 border border-gray-300 rounded bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 min-h-24"
+                    className="w-full mb-4 p-3 border-2 border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition min-h-24 resize-none"
                 />
-                <select
-                    value={severity}
-                    onChange={(e) => setSeverity(e.target.value as 'LOW' | 'MEDIUM' | 'HIGH')}
-                    className="w-full mb-6 p-3 border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                </select>
+                
+                <div className={`w-full mb-6 p-3 rounded-md ${severityColors[severity]} transition`}>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Severity Level</label>
+                    <select
+                        value={severity}
+                        onChange={(e) => setSeverity(e.target.value as 'LOW' | 'MEDIUM' | 'HIGH')}
+                        className="w-full p-2 border-2 border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 font-medium cursor-pointer"
+                    >
+                        <option value="LOW">🟢 Low</option>
+                        <option value="MEDIUM">🟡 Medium</option>
+                        <option value="HIGH">🔴 High</option>
+                    </select>
+                </div>
+                
                 <div className="flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition font-medium"
+                        className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition font-semibold"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition font-medium disabled:opacity-50"
+                        className="px-5 py-2.5 bg-blue-500 text-white rounded-md hover:shadow-lg hover:shadow-blue-500/30 transition font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        {submitting ? 'Submitting...' : 'Submit'}
+                        {submitting ? 'Submitting...' : 'Submit Bug'}
                     </button>
                 </div>
             </div>
