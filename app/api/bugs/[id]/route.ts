@@ -3,11 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { getUserFromRequest } from '@/app/lib/auth';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
+export async function GET(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const bugId = parseInt(params.id, 10);
+  const { id } = await params;
+  const bugId = parseInt(id, 10);
   if (isNaN(bugId)) return NextResponse.json({ error: 'Invalid bug id' }, { status: 400 });
 
   const bug = await prisma.bug.findFirst({
