@@ -1,6 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 
 
@@ -14,7 +15,7 @@ export default function LogoutBtn() {
             await fetch('/api/auth/logout', { method: 'POST' });
             router.push('/login');
         } catch (error) {
-            console.error('Logout failed:', error);
+           toast.error('Logout failed. Please try again.');
             setIsLoading(false);
         }
     };

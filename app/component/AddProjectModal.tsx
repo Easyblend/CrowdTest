@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface AddProjectModalProps {
   onClose: () => void;
@@ -32,7 +33,7 @@ export default function AddProjectModal({ onClose, onProjectCreated }: AddProjec
       setFormData({ name: '', url: '', description: '' });
       onClose();
     } catch (err) {
-      console.error(err);
+      toast.error((err as Error).message || 'An error occurred while creating the project');
     } finally {
       setSaving(false);
     }

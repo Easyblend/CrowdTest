@@ -5,6 +5,7 @@ import AddProjectModal from '../component/AddProjectModal';
 import LogoutBtn from '../component/LogoutBtn';
 import ProjectCard from '../component/ProjectCard';
 import { FullScreenLoader } from '../component/FullScreenLoader';
+import toast from 'react-hot-toast';
 
 interface Bug {
   id: number;
@@ -33,7 +34,7 @@ export default function DashboardPage() {
         const data: Project[] = await res.json();
         setProjects(data);
       } catch (err) {
-        console.error(err);
+        toast.error((err as Error).message || 'An error occurred while fetching projects');
       } finally {
         setLoading(false);
       }
