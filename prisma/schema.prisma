@@ -13,6 +13,7 @@ model User {
   password String
   projects Project[]
   role     Role   @default(DEV)
+  bugs     Bug[]
 }
 
 enum Role {
@@ -22,15 +23,25 @@ enum Role {
 }
 
 model Bug {
-  id          Int       @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   title       String
   description String
   severity    String
-  screenshot  String?
+  createdAt   DateTime @default(now())
   projectId   Int
-  project     Project    @relation(fields: [projectId], references: [id])
-  createdAt   DateTime   @default(now())
+  project     Project @relation(fields: [projectId], references: [id])
+  createdBy   Int
+  user        User    @relation(fields: [createdBy], references: [id])
+  screenshots Screenshot[]
 }
+
+model Screenshot {
+  id       Int    @id @default(autoincrement())
+  url      String
+  bugId    Int
+  bug      Bug @relation(fields: [bugId], references: [id])
+}
+
 
 model Project {
   id          Int       @id @default(autoincrement())

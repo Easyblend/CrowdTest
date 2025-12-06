@@ -17,7 +17,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
   const project = await prisma.project.findFirst({
     where: { id: projectId, createdBy: user.id },
-    include: { bugs: true },
+    include: { 
+      bugs: {
+      include: {
+        screenshots: true,
+      },
+    },
+    },
   });
 
   if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });

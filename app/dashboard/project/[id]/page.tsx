@@ -8,13 +8,22 @@ import BugReportModal from '@/app/component/BugReportModal';
 import BugCard from '@/app/component/BugCard';
 import toast from 'react-hot-toast';
 import { FullScreenLoader } from '@/app/component/FullScreenLoader';
+import BugDetailModal from '@/app/component/BugDetailModal';
+
+interface Screenshot {
+  id: number;
+  url: string;
+}
 
 interface Bug {
-    id: number;
-    title: string;
-    description: string;
-    severity: 'HIGH' | 'MEDIUM' | 'LOW';
-    createdAt: string;
+  id: number;
+  title: string;
+  description: string;
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+  createdAt: string;
+  projectId: number;
+  createdBy: number;
+  screenshots: Screenshot[];
 }
 
 interface Project {
@@ -43,6 +52,9 @@ export default function ProjectPage() {
     const [bugDescription, setBugDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
+
+
     // Load project
     useEffect(() => {
         async function load() {
@@ -52,7 +64,7 @@ export default function ProjectPage() {
                 const data = await res.json();
                 setProject(data);
             } catch (err) {
-                console.error(err);
+                toast.error("Could not load project.");
             } finally {
                 setLoading(false);
             }
@@ -69,7 +81,7 @@ export default function ProjectPage() {
                 const data: User = await res.json();
                 setUser(data);
             } catch (err) {
-               toast.error("This didn't work.")
+                toast.error("This didn't work.")
             }
         }
         loadUser();
@@ -92,14 +104,15 @@ export default function ProjectPage() {
 
         setSubmitting(true);
         try {
+            const form = new FormData();
+            form.append("title", bugTitle);
+            form.append("description", bugDescription);
+            form.append("severity", bugSeverity);
+
             const res = await fetch(`/api/projects/${id}/bugs`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: bugTitle,
-                    severity: bugSeverity,
-                    description: bugDescription,
-                }),
+                body: form
             });
             if (!res.ok) throw new Error('Failed to submit bug');
             const newBug: Bug = await res.json();
@@ -109,7 +122,7 @@ export default function ProjectPage() {
             setBugSeverity('LOW');
             setBugDescription('');
         } catch (err) {
-            console.error(err);
+            toast.error("An error occurred while submitting the bug.");
         } finally {
             setSubmitting(false);
         }
@@ -170,24 +183,31 @@ export default function ProjectPage() {
                 {showBugForm && (
                     <BugReportModal
                         onClose={() => setShowBugForm(false)}
-                        onSubmit={async (title, description, severity) => {
+                        onSubmit={async (title, description, severity, bugImage) => {
                             setSubmitting(true);
                             try {
+                                const form = new FormData();
+                                form.append("title", title);
+                                form.append("description", description);
+                                form.append("severity", severity);
+                                form.append("screenshot", new Blob([bugImage]), "bug.png");
+
                                 const res = await fetch(`/api/projects/${id}/bugs`, {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ title, description, severity }),
+                                    body: form,
                                 });
+
                                 if (!res.ok) throw new Error('Failed to submit bug');
                                 const newBug: Bug = await res.json();
                                 setProject({ ...project, bugs: [newBug, ...project.bugs] });
                             } catch (err) {
-                                console.error(err);
+                               toast.error("An error occurred while submitting the bug.");
                             } finally {
                                 setSubmitting(false);
                             }
                         }}
                     />
+
                 )}
 
                 {/* Bugs Section */}
@@ -209,9 +229,20 @@ export default function ProjectPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {project.bugs.map((bug) => (
-                            <BugCard key={bug.id} bug={bug} />
+                            <div key={bug.id} onClick={() => setSelectedBug(bug)} className="cursor-pointer">
+                                <BugCard bug={bug} />
+                            </div>
                         ))}
                     </div>
+
+                    {selectedBug && (
+                        <BugDetailModal
+                            bug={selectedBug}
+                            onClose={() => setSelectedBug(null)}
+                        />
+                    )}
+
+
                 </section>
             </div>
         </main>

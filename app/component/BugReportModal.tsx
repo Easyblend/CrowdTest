@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface BugReportModalProps {
     onClose: () => void;
-    onSubmit: (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH') => void;
+    onSubmit: (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage: BlobPart) => void;
 }
 
 export default function BugReportModal({ onClose, onSubmit }: BugReportModalProps) {
@@ -12,11 +12,13 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
     const [description, setDescription] = useState('');
     const [severity, setSeverity] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
     const [submitting, setSubmitting] = useState(false);
+    const [bugImage, setBugImage] = useState<File | null>(null);
 
     const handleSubmit = async () => {
-        if (!title || !severity) return;
+        if (!title || !severity || !bugImage) return;
         setSubmitting(true);
-        await onSubmit(title, description, severity);
+        const buffer = await bugImage.arrayBuffer();
+        onSubmit(title, description, severity, Buffer.from(buffer));
         setSubmitting(false);
         setTitle('');
         setDescription('');
@@ -67,7 +69,17 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
                         <option value="HIGH">🔴 High</option>
                     </select>
                 </div>
-                
+                <div className="mb-6">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Attach Screenshot</label>
+                    <input 
+                        type="file"
+                         accept=".png,.jpg,.jpeg"
+                        onChange={(e) => setBugImage(e.target.files?.[0] || null)}
+                        className="w-full p-3 border-2 border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition cursor-pointer file:mr-3 file:px-3 file:py-1.5 file:bg-blue-500 file:text-white file:rounded file:border-0 file:font-semibold file:cursor-pointer hover:file:bg-blue-600"
+                    />
+                    {bugImage && <p className="text-sm text-gray-600 mt-2">📎 {bugImage.name}</p>}
+                </div>
+
                 <div className="flex justify-end gap-3">
                     <button
                         onClick={onClose}
