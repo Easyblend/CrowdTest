@@ -53,3 +53,12 @@ model Project {
   bugs        Bug[]
   createdAt   DateTime  @default(now())
 }
+
+model Waitlist {
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  confirmed         Boolean  @default(false)
+  confirmationToken String?  
+  createdAt         DateTime @default(now())
+}
+
