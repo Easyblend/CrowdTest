@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   // Check if email already exists
   const existing = await prisma.waitlist.findUnique({ where: { email } });
   if (existing) {
-    if (existing.confirmed) return NextResponse.json({ success: true }); // already confirmed
+    if (existing.confirmed) return NextResponse.json({ alreadyConfirmed: true }); // already confirmed
     // resend confirmation if not confirmed
   }
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const confirmUrl = `https://crowdtest.dev/api/waitlist/confirm?token=${token}`;
+  const confirmUrl = `${process.env.PROD_URL}/api/waitlist/confirm?token=${token}`;
 
   await transporter.sendMail({
     from: '"CrowdTest" <hello@crowdtest.dev>',

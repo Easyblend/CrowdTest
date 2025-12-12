@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import { prisma } from '@/app/lib/prisma';
 
 export async function GET(req: NextRequest) {
@@ -6,13 +7,27 @@ export async function GET(req: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
 
   const user = await prisma.waitlist.findFirst({ where: { confirmationToken: token } });
-  if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
+  if (!user) {
+    return NextResponse.redirect(
+      `${process.env.PROD_URL}/error?reason=invalid_token`
+    );    
+  }
 
   await prisma.waitlist.update({
     where: { id: user.id },
     data: { confirmed: true, confirmationToken: null },
   });
 
-  // redirect to a thank you page or home
-  return NextResponse.redirect('https://crowdtest.dev/thank-you');
+
+  // Create a short-lived JWT for redirect to thank-you page
+  const redirectToken = jwt.sign(
+    { email: user.email, confirmed: true },
+    process.env.JWT_SECRET!,
+    { expiresIn: "5m" }
+  );
+
+  return NextResponse.redirect(
+    `${process.env.PROD_URL}/waitlist/thank-you?token=${redirectToken}`
+  );
+
 }
