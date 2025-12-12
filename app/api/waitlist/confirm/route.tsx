@@ -19,15 +19,8 @@ export async function GET(req: NextRequest) {
   });
 
 
-  // Create a short-lived JWT for redirect to thank-you page
-  const redirectToken = jwt.sign(
-    { email: user.email, confirmed: true },
-    process.env.JWT_SECRET!,
-    { expiresIn: "5m" }
-  );
-
   return NextResponse.redirect(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/waitlist/thank-you?token=${redirectToken}`
+    `${process.env.NEXT_PUBLIC_SITE_URL}/waitlist/thank-you?verified=true`
   );
 
 }
