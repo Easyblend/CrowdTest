@@ -22,6 +22,13 @@ export default function WaitlistSignup() {
 
       if (!res.ok) throw new Error('Failed to submit');
 
+      const data = await res.json();
+
+      if (data.alreadyConfirmed) {
+        toast.success("You're already confirmed!");
+        return;
+      }
+
       setSubmitted(true);
     } catch (err) {
       console.error(err);

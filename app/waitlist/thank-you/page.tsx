@@ -1,8 +1,28 @@
 'use client';
 
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function ThankYouPage() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const verified = params.get('verified');
+
+  // Track whether verification is valid
+  const [valid, setValid] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!verified) {
+      router.replace('/'); // replace is smoother for redirects
+      return;
+    }
+    setValid(true);
+  }, [verified, router]);
+
+  // While checking, show nothing (prevents flicker)
+  if (valid === null) return null;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-cover bg-no-repeat px-4">
       <div className="bg-white/80 dark:bg-slate-800/60 p-8 rounded-xl shadow-lg backdrop-blur-sm w-full max-w-md text-center">
