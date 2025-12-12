@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const confirmUrl = `${process.env.PROD_URL}/api/waitlist/confirm?token=${token}`;
+  const confirmUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/waitlist/confirm?token=${token}`;
 
   await transporter.sendMail({
     from: '"CrowdTest" <hello@crowdtest.dev>',

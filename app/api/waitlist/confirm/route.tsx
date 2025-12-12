@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const user = await prisma.waitlist.findFirst({ where: { confirmationToken: token } });
   if (!user) {
     return NextResponse.redirect(
-      `${process.env.PROD_URL}/error?reason=invalid_token`
+      `${process.env.NEXT_PUBLIC_SITE_URL}/error?reason=invalid_token`
     );    
   }
 
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   );
 
   return NextResponse.redirect(
-    `${process.env.PROD_URL}/waitlist/thank-you?token=${redirectToken}`
+    `${process.env.NEXT_PUBLIC_SITE_URL}/waitlist/thank-you?token=${redirectToken}`
   );
 
 }
