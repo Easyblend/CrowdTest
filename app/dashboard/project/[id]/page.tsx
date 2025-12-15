@@ -183,29 +183,7 @@ export default function ProjectPage() {
                 {showBugForm && (
                     <BugReportModal
                         onClose={() => setShowBugForm(false)}
-                        onSubmit={async (title, description, severity, bugImage) => {
-                            setSubmitting(true);
-                            try {
-                                const form = new FormData();
-                                form.append("title", title);
-                                form.append("description", description);
-                                form.append("severity", severity);
-                                form.append("screenshot", new Blob([bugImage]), "bug.png");
-
-                                const res = await fetch(`/api/projects/${id}/bugs`, {
-                                    method: 'POST',
-                                    body: form,
-                                });
-
-                                if (!res.ok) throw new Error('Failed to submit bug');
-                                const newBug: Bug = await res.json();
-                                setProject({ ...project, bugs: [newBug, ...project.bugs] });
-                            } catch (err) {
-                               toast.error("An error occurred while submitting the bug.");
-                            } finally {
-                                setSubmitting(false);
-                            }
-                        }}
+                        onSubmit={handleSubmitBug}
                     />
 
                 )}
