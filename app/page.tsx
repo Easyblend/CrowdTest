@@ -48,7 +48,7 @@ export default function Page() {
           />
         </div>
 
-        <p className="text-xs">Join testers & founders improving products daily</p>
+        <p className="text-xs">Catch bugs before your users do</p>
       </div>
 
       {/* Main Hero Text */}
