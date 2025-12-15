@@ -1,6 +1,6 @@
 ## 🚧 Join the Waitlist!
 
-Catch bugs before your users do! If you're building a new app, let real developers test it before you go live. Boost your confidence in your app’s performance and reliability by joining our waitlist at [Crowdtest](https://crowdtest-dev.framer.website/).
+Catch bugs before your users do! If you're building a new app, let real developers test it before you go live. Boost your confidence in your app’s performance and reliability by joining our waitlist at [Crowdtest](https://crowdtest.dev).
 
 Stay ahead of the game and ensure your application is ready for the world!
 
