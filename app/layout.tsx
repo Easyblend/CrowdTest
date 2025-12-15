@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://crowdtest.dev'),
   title: "CrowdTest — Human-focused app testing",
   description: "Real testers. Real feedback. Catch UI/UX issues automation tools miss.",
   keywords: ["QA testing", "web app testing", "bug testing", "software QA", "quality assurance", "beta testing service", "app testing platform"],
