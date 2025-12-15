@@ -74,8 +74,11 @@ export default function WaitlistSignup() {
           Join the CrowdTest Waitlist
         </h1>
 
-        <p className="text-gray-600 dark:text-gray-300 text-center text-sm">
-          Be the first to test products, earn rewards, and access early features.
+        <p className="text-gray-600 dark:text-gray-300 text-center text-sm mb-4">
+          Get tested by <span className="font-semibold text-purple-600 dark:text-purple-400">real users</span>.
+        </p>
+        <p className="text-gray-500 dark:text-gray-400 text-center text-sm mb-6">
+          Be the first to access CrowdTest. <span className="font-semibold text-purple-600 dark:text-purple-400">completely free</span>. 🚀
         </p>
 
         <input
