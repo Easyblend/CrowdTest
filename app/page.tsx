@@ -1,7 +1,27 @@
-"use client";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import ThemeToggle from "./component/ThemeToggle";
+
+export const metadata: Metadata = {
+  title: "CrowdTest | Professional Web App QA Testing for Indie Developers",
+  description: "Get real human feedback on your web app before launch. Professional QA testing, bug reports, and UX feedback from actual testers.",
+  keywords: ["app testing", "QA testing", "beta testing", "bug testing", "web app testing", "indie dev testing", "software testing"],
+  openGraph: {
+    title: "CrowdTest | Professional Web App QA Testing",
+    description: "Get professional QA testing feedback before launch. Real testers, real feedback.",
+    url: "https://crowdtest.dev",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "CrowdTest - Human App Testing Platform",
+      },
+    ],
+  },
+};
 
 export default function Page() {
 

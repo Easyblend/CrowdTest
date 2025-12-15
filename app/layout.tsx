@@ -14,9 +14,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "CrowdTest — Human-focused app testing",
   description: "Real testers. Real feedback. Catch UI/UX issues automation tools miss.",
+  keywords: ["QA testing", "web app testing", "bug testing", "software QA", "quality assurance", "beta testing service", "app testing platform"],
+  authors: [{ name: "CrowdTest" }],
+  creator: "CrowdTest",
   openGraph: {
     title: "CrowdTest — Human Testing for Indie Devs",
     description: "Real testers help you find UI/UX problems, unclear flows, spelling mistakes, and more.",
@@ -24,7 +27,7 @@ export const metadata = {
     siteName: "CrowdTest",
     images: [
       {
-        url: "/og-image.png", // Store this in /public folder
+        url: "/og-image.png",
         width: 1200,
         height: 630,
       },
@@ -36,6 +39,10 @@ export const metadata = {
     title: "CrowdTest — Human Testing for Indie / solo Devs",
     description: "Real testers helping you polish your product.",
     images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
