@@ -7,8 +7,11 @@ export async function POST(req: NextRequest) {
   const { email } = await req.json();
   if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 });
 
+  // Normalize email to lowercase for case-insensitive comparison
+  const normalizedEmail = email.toLowerCase().trim();
+
   // Check if email already exists
-  const existing = await prisma.waitlist.findUnique({ where: { email } });
+  const existing = await prisma.waitlist.findUnique({ where: { email: normalizedEmail } });
   if (existing) {
     if (existing.confirmed) return NextResponse.json({ alreadyConfirmed: true }); // already confirmed
     // resend confirmation if not confirmed
@@ -17,9 +20,9 @@ export async function POST(req: NextRequest) {
   const token = crypto.randomBytes(32).toString('hex');
 
   const user = await prisma.waitlist.upsert({
-    where: { email },
+    where: { email: normalizedEmail },
     update: { confirmationToken: token },
-    create: { email, confirmationToken: token },
+    create: { email: normalizedEmail, confirmationToken: token },
   });
 
   // Send confirmation email
@@ -37,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   await transporter.sendMail({
     from: '"CrowdTest" <hello@crowdtest.dev>',
-    to: email,
+    to: normalizedEmail,
     subject: 'Confirm your email for CrowdTest 🚀',
     html: `
       <div style="font-family: Arial,sans-serif; max-width:600px; margin:auto; padding:20px; background:#f9f9f9; border-radius:10px; border:1px solid #eee;">

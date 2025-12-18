@@ -10,14 +10,15 @@ export default function WaitlistSignup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return toast.error('Please enter your email');
+    const normalizedEmail = email.toLowerCase().trim();
+    if (!normalizedEmail) return toast.error('Please enter your email');
     setSubmitting(true);
 
     try {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: normalizedEmail }),
       });
 
       if (!res.ok) throw new Error('Failed to submit');
