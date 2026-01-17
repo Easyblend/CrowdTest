@@ -1,5 +1,6 @@
 import { prisma } from '@/app/lib/prisma';
 import ProjectCard from '../component/ProjectCard';
+import { redirect } from 'next/navigation';
 
 
 interface Bug {
@@ -17,6 +18,7 @@ interface Project {
 }
 
 export default async function AdminDashboard() {
+    redirect("/");
     const projectsFromDb: Project[] = await prisma.project.findMany({
         include: { bugs: true },
     });
