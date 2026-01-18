@@ -1,4 +1,4 @@
-import { prisma } from '@/app/lib/prisma';
+import { prisma } from '../lib/prisma';
 import ProjectCard from '../component/ProjectCard';
 import { redirect } from 'next/navigation';
 

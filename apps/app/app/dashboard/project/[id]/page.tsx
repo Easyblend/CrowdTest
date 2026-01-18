@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ExternalLink, AlertCircle } from 'lucide-react';
-import BugReportModal from '@/app/component/BugReportModal';
-import BugCard from '@/app/component/BugCard';
+import BugReportModal from './../../../component/BugReportModal';
+import BugCard from './../../../component/BugCard';
 import toast from 'react-hot-toast';
-import { FullScreenLoader } from '@/app/component/FullScreenLoader';
-import BugDetailModal from '@/app/component/BugDetailModal';
+import { FullScreenLoader } from './../../../component/FullScreenLoader';
+import BugDetailModal from './../../../component/BugDetailModal';
 
 interface Screenshot {
     id: number;

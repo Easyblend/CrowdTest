@@ -1,7 +1,7 @@
 // app/api/bugs/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
-import { getUserFromRequest } from '@/app/lib/auth';
+import { prisma } from '../../..//lib/prisma';
+import { getUserFromRequest } from '../../../lib/auth';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
