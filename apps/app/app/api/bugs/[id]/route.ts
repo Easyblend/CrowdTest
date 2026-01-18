@@ -1,6 +1,6 @@
 // app/api/bugs/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../..//lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 import { getUserFromRequest } from '../../../lib/auth';
 
 interface RouteParams {
