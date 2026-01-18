@@ -4,26 +4,26 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ExternalLink, AlertCircle } from 'lucide-react';
-import BugReportModal from '@/apps/app/app/component/BugReportModal';
-import BugCard from '@/apps/app/app/component/BugCard';
+import BugReportModal from '@/app/component/BugReportModal';
+import BugCard from '@/app/component/BugCard';
 import toast from 'react-hot-toast';
-import { FullScreenLoader } from '@/apps/app/app/component/FullScreenLoader';
-import BugDetailModal from '@/apps/app/app/component/BugDetailModal';
+import { FullScreenLoader } from '@/app/component/FullScreenLoader';
+import BugDetailModal from '@/app/component/BugDetailModal';
 
 interface Screenshot {
-  id: number;
-  url: string;
+    id: number;
+    url: string;
 }
 
 interface Bug {
-  id: number;
-  title: string;
-  description: string;
-  severity: 'HIGH' | 'MEDIUM' | 'LOW';
-  createdAt: string;
-  projectId: number;
-  createdBy: number;
-  screenshots: Screenshot[];
+    id: number;
+    title: string;
+    description: string;
+    severity: 'HIGH' | 'MEDIUM' | 'LOW';
+    createdAt: string;
+    projectId: number;
+    createdBy: number;
+    screenshots: Screenshot[];
 }
 
 interface Project {
@@ -99,21 +99,28 @@ export default function ProjectPage() {
         </div>
     );
 
-    const handleSubmitBug = async () => {
-        if (!bugTitle || !bugSeverity) return;
+    const handleSubmitBug = async (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: BlobPart) => {
+        if (!title || !severity) return;
 
         setSubmitting(true);
         try {
+            const payload: any = { title, description, severity };
+
+            // optionally attach image if provided
             const form = new FormData();
-            form.append("title", bugTitle);
-            form.append("description", bugDescription);
-            form.append("severity", bugSeverity);
+            form.append("title", title);
+            form.append("description", description);
+            form.append("severity", severity);
+
+            if (bugImage) {
+               form.append("screenshot", new Blob([bugImage]), "bug.png");
+            }
 
             const res = await fetch(`/api/projects/${id}/bugs`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: form
+                body: form,
             });
+
             if (!res.ok) throw new Error('Failed to submit bug');
             const newBug: Bug = await res.json();
             setProject({ ...project, bugs: [newBug, ...project.bugs] });
@@ -168,7 +175,7 @@ export default function ProjectPage() {
                 )}
 
                 {/* Tester Bug Button */}
-                {user?.role === 'TESTER' && (
+                {user?.role === 'TESTER' || user?.role === 'ADMIN' && (
                     <div className="mb-6">
                         <button
                             onClick={() => setShowBugForm(!showBugForm)}
