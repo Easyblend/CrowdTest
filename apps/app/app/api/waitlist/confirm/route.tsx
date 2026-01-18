@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { prisma } from '@/apps/app/app/lib/prisma';
+import { prisma } from '@/app/lib/prisma';
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token');
