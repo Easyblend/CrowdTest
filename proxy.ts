@@ -32,9 +32,25 @@ export default async function proxy(req: NextRequest) {
     }
   }
 
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+  if (!token) {
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+
+    try {
+      const { payload } = await jwtVerify(token, secret);
+      if (payload.role !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+      return NextResponse.next();
+    } catch (_) {
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/dashboard', '/login', '/signup'],
+  matcher: ['/dashboard/:path*', '/dashboard', '/login', '/signup', '/admin/:path*', '/admin'],
 };
