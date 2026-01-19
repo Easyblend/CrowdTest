@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import ThemeToggle from "@/app/component/ThemeToggle";
+import ThemeToggle from "@/component/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "CrowdTest | Professional Web App QA Testing for Indie Developers",

@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import AddProjectModal from '@/app//component/AddProjectModal';
-import LogoutBtn from '@/app//component/LogoutBtn';
-import ProjectCard from '@/app//component/ProjectCard';
-import { FullScreenLoader } from '@/app//component/FullScreenLoader';
+import AddProjectModal from '@/component/AddProjectModal';
+import LogoutBtn from '@/component/LogoutBtn';
+import ProjectCard from '@/component/ProjectCard';
+import { FullScreenLoader } from '@/component/FullScreenLoader';
 import toast from 'react-hot-toast';
 
 interface Bug {

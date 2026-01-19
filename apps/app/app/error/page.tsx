@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import ErrorPageClient from './ErrorPageClient';
-import { FullScreenLoader } from '@/app/component/FullScreenLoader';
+import { FullScreenLoader } from '@/component/FullScreenLoader';
 
 export default function ErrorPage() {
   return (
