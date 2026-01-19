@@ -18,7 +18,7 @@ interface Project {
 }
 
 export default async function AdminDashboard() {
-    // redirect("/");
+    redirect("/");
     const projectsFromDb: Project[] = await prisma.project.findMany({
         include: { bugs: true },
     });
