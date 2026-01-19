@@ -1,8 +1,8 @@
 // app/api/projects/[id]/bugs/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
-import { getUserFromRequest } from '@/app/lib/auth';
-import cloudinary from '@/app/lib/cloudinary';
+import { prisma } from '@/lib/prisma';
+import { getUserFromRequest } from '@/lib/auth';
+import cloudinary from '@/lib/cloudinary';
 
 
 interface RouteParams {
