@@ -6,6 +6,54 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String?
+  email    String @unique
+  password String
+  projects Project[]
+  role     Role   @default(DEV)
+  bugs     Bug[]
+}
+
+enum Role {
+  DEV
+  TESTER
+  ADMIN
+}
+
+model Bug {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  severity    String
+  createdAt   DateTime @default(now())
+  projectId   Int
+  project     Project @relation(fields: [projectId], references: [id])
+  createdBy   Int
+  user        User    @relation(fields: [createdBy], references: [id])
+  screenshots Screenshot[]
+}
+
+model Screenshot {
+  id       Int    @id @default(autoincrement())
+  url      String
+  bugId    Int
+  bug      Bug @relation(fields: [bugId], references: [id])
+}
+
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  url         String
+  description String?
+  createdBy   Int
+  user        User      @relation(fields: [createdBy], references: [id])
+  bugs        Bug[]
+  createdAt   DateTime  @default(now())
+}
+
 model Waitlist {
   id                Int      @id @default(autoincrement())
   email             String   @unique
