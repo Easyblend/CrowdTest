@@ -26,15 +26,13 @@ export default function Page() {
     <div className="flex min-h-screen flex-col items-center justify-center text-center px-6 bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-no-repeat bg-cover">
       
       {/* Hero */}
-      <h1 className="max-w-4xl text-4xl md:text-6xl font-semibold tracking-tight">
-        Ship with confidence.
-        <br />
-        <span className="text-primary">Get real people to test your app.</span>
+      <h1 className="max-w-3xl text-3xl md:text-5xl font-semibold tracking-tight">
+        Ready to get feedback?
       </h1>
 
-      <p className="mt-5 max-w-xl text-base md:text-lg text-muted-foreground">
-        CrowdTest helps indie developers uncover bugs and usability issues
-        before launch — using real human testers.
+      <p className="mt-4 max-w-xl text-base md:text-lg text-muted-foreground">
+        Share your app with real testers and get clear, actionable feedback
+        before you ship.
       </p>
 
       {/* CTA */}
@@ -43,13 +41,12 @@ export default function Page() {
           href="/signup"
           className="inline-flex items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 text-sm font-medium hover:opacity-90 transition"
         >
-          Submit your app for testing
+          Drop a link to your App →
         </Link>
       </div>
-
       {/* Reassurance */}
       <p className="mt-4 text-xs text-muted-foreground">
-        No automation. No bots. Just honest feedback.
+        Takes less than a minute. No commitment.
       </p>
     </div>
   );
