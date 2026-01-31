@@ -6,7 +6,8 @@ import { NextResponse } from 'next/server'
 export async function POST(req: Request) {
   const { email, password } = await req.json()
 
-  const user = await prisma.user.findUnique({ where: { email } })
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
   if (!user) return new Response(JSON.stringify({ error: "No existing user" }), { status: 404 })
 
   const match = await bcrypt.compare(password, user.password)
