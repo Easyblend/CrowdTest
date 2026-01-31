@@ -15,8 +15,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
   }
 
+  const whereClause = user.role === 'ADMIN' ?
+    { id: projectId } :
+    { id: projectId, createdBy: user.id };
+
   const project = await prisma.project.findFirst({
-    where: { id: projectId, createdBy: user.id },
+    where: whereClause,
     include: { 
       bugs: {
       include: {
@@ -43,8 +47,12 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const data = await req.json();
 
+  const whereClause = user.role === 'ADMIN' ?
+    { id: projectId } :
+    { id: projectId, createdBy: user.id };
+
   const updated = await prisma.project.updateMany({
-    where: { id: projectId, createdBy: user.id },
+    where: whereClause,
     data,
   });
 
@@ -61,8 +69,12 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const projectId = parseInt(id, 10);
   if (isNaN(projectId)) return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
 
+  const whereClause = user.role === 'ADMIN' ?
+    { id: projectId } :
+    { id: projectId, createdBy: user.id };
+
   const deleted = await prisma.project.deleteMany({
-    where: { id: projectId, createdBy: user.id },
+    where: whereClause,
   });
 
   if (deleted.count === 0) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
