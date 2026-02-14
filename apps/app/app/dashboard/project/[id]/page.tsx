@@ -76,7 +76,7 @@ export default function ProjectPage() {
     useEffect(() => {
         async function loadUser() {
             try {
-                const res = await fetch('/api/me'); // assumes you have /api/me returning { id, role }
+                const res = await fetch('/api/me'); // /api/me returning { id, role }
                 if (!res.ok) throw new Error('Failed to fetch user');
                 const data: User = await res.json();
                 setUser(data);

@@ -11,8 +11,13 @@ export default async function proxy(req: NextRequest) {
   // If visiting login/signup AND already logged in → redirect to dashboard
   if (token && isAuthPage) {
     try {
-      await jwtVerify(token, secret);
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+     const { payload } = await jwtVerify(token, secret);
+
+      if(payload.role =='ADMIN'){
+        return NextResponse.redirect(new URL('/admin', req.url));
+      }else{
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
     } catch (_) {
       // token invalid → allow login/signup
     }

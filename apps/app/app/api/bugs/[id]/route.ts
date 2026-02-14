@@ -25,3 +25,25 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
   return NextResponse.json(bug);
 }
+
+
+export async function DELETE(req: NextRequest, {params}: RouteParams){
+   const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const {id} = await params;
+    const bugId = parseInt(id, 10);
+  if (isNaN(bugId)) return NextResponse.json({ error: 'Invalid bug id' }, { status: 400 });
+
+  const bug = await prisma.bug.delete({
+    where: {
+      id: bugId,
+      project: {createdBy: user.id}
+    }
+  })
+
+  if (!bug) return NextResponse.json({ error: 'Bug not found' }, { status: 404 });
+  
+  return NextResponse.json({ message: 'Bug deleted successfully' });
+
+}
