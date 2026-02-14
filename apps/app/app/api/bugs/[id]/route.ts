@@ -43,9 +43,9 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
   if (!bug) return NextResponse.json({ error: 'Bug not found' }, { status: 404 });
 
-  if (bug.project.createdBy !== user.id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+ const canDelete = user.role === 'ADMIN' || bug.project.createdBy === user.id;
+  if (!canDelete) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
 
   // Step 2: delete
   await prisma.bug.delete({ where: { id: bugId } });
