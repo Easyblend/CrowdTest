@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -49,8 +48,11 @@ export default function DeleteBugModal({ open, onClose, bugId, onDelete }: Props
 
         <div className="flex justify-end gap-3">
           <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm rounded-md border"
+            onClick={(e)=>{
+                e.stopPropagation()
+                onClose()
+            }}
+            className="px-4 py-2 text-sm rounded-md border bg-amber-400"
           >
             Cancel
           </button>
