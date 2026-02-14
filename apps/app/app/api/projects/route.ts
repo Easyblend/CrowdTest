@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
+import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
 
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const user = getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { name, url, description } = await req.json();
 
@@ -33,6 +35,13 @@ export async function POST(req: NextRequest) {
     },
     include: { bugs: true },
   });
+
+  // Notify admin about the new project
+  sendAdminNotification({
+    subject: `New Project Submitted: ${project.name}`,
+    message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
+    link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
+  }).catch(console.error);
 
   return NextResponse.json(project, { status: 201 });
 }
