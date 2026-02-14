@@ -6,6 +6,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+html{
+    scroll-behavior: smooth;
+}
+
 body {
     @apply bg-white text-slate-800 dark:bg-gray-950 dark:text-white text-sm font-poppins antialiased;
 }
