@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
 import cloudinary from '@/lib/cloudinary';
+import { sendBugReport } from '@/lib/email/sendBugReport';
 
 
 interface RouteParams {
@@ -27,10 +28,12 @@ function uploadToCloudinary(buffer: Buffer): Promise<string> {
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
   const projectId = parseInt(id, 10);
+
   if (isNaN(projectId))
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
 
@@ -41,9 +44,23 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   const file = formData.get('screenshot') as File | null;
 
   if (!title || !severity)
-    return NextResponse.json({ error: 'Title and severity required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Title and severity required' },
+      { status: 400 }
+    );
 
-  // Create bug first
+  // Fetch project + owner
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      user: true,
+    }
+  });
+
+  if (!project)
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+
+  // Create bug
   const bug = await prisma.bug.create({
     data: {
       title,
@@ -54,11 +71,13 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     },
   });
 
-  // If file exists, create screenshot linked to bug
+  let screenshotUrl: string | undefined;
+
+  // Upload screenshot if exists
   if (file) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const screenshotUrl = await uploadToCloudinary(buffer);
+    screenshotUrl = await uploadToCloudinary(buffer);
 
     await prisma.screenshot.create({
       data: {
@@ -68,12 +87,23 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     });
   }
 
-  // Return bug including screenshots
+  // Fire-and-forget email to project owner
+  if (project.name) {
+    sendBugReport({
+      receiverEmail: project.user.email,
+      projectName: project.name,
+      receiverName: project.user.name ?? "there",
+      bugTitle: bug.title,
+      bugDescription: bug.description,
+      severity: bug.severity,
+      screenshotUrl,
+    }).catch(console.error);
+  }
+
   const bugWithScreenshots = await prisma.bug.findUnique({
     where: { id: bug.id },
     include: { screenshots: true },
   });
-
 
   return NextResponse.json(bugWithScreenshots, { status: 201 });
 }
