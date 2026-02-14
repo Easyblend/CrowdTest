@@ -87,15 +87,15 @@ export default function ProjectPage() {
         loadUser();
     }, []);
 
-const handleDeleteBug = async (bugId: number): Promise<void> => {
-    const res = await fetch(`/api/bugs/${bugId}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed");
+    const handleDeleteBug = async (bugId: number): Promise<void> => {
+        const res = await fetch(`/api/bugs/${bugId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed");
 
-    setProject(prev => prev ? {
-        ...prev,
-        bugs: prev.bugs.filter(b => b.id !== bugId)
-    } : prev);
-};
+        setProject(prev => prev ? {
+            ...prev,
+            bugs: prev.bugs.filter(b => b.id !== bugId)
+        } : prev);
+    };
 
     if (loading) return FullScreenLoader();
 
@@ -110,7 +110,14 @@ const handleDeleteBug = async (bugId: number): Promise<void> => {
     );
 
     const handleSubmitBug = async (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: BlobPart) => {
-        if (!title || !severity) return;
+        if (!title) {
+            toast.error("Please enter a bug title");
+            return;
+        }
+        if (!severity) {
+            toast.error("Please select a severity");
+            return;
+        }
 
         setSubmitting(true);
         try {
