@@ -114,8 +114,6 @@ const handleDeleteBug = async (bugId: number): Promise<void> => {
 
         setSubmitting(true);
         try {
-            const payload: any = { title, description, severity };
-
             // optionally attach image if provided
             const form = new FormData();
             form.append("title", title);
@@ -138,6 +136,7 @@ const handleDeleteBug = async (bugId: number): Promise<void> => {
             setBugTitle('');
             setBugSeverity('LOW');
             setBugDescription('');
+            toast.success("Bug successfully reported")
         } catch (err) {
             toast.error("An error occurred while submitting the bug.");
         } finally {

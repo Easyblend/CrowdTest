@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface BugReportModalProps {
     onClose: () => void;
-    onSubmit: (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage: BlobPart) => Promise<void>;
+    onSubmit: (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: BlobPart) => Promise<void>;
 }
 
 export default function BugReportModal({ onClose, onSubmit }: BugReportModalProps) {
@@ -15,10 +15,9 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
     const [bugImage, setBugImage] = useState<File | null>(null);
 
     const handleSubmit = async () => {
-        if (!title || !severity || !bugImage) return;
+        if (!title || !severity) return;
         setSubmitting(true);
-        const buffer = await bugImage.arrayBuffer();
-        await onSubmit(title, description, severity, Buffer.from(buffer));
+        await onSubmit(title, description, severity, bugImage || undefined);
         setSubmitting(false);
         setTitle('');
         setDescription('');
