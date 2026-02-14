@@ -32,7 +32,7 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(json.error || 'Login failed');
 
       // redirect to dashboard on success
-      router.push('/dashboard');
+      router.push('/admin');
     } catch (err: any) {
       setErrorMsg(err.message);
     } finally {
