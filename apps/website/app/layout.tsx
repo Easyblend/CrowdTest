@@ -15,15 +15,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://crowdtest.dev'),
+  metadataBase: new URL("https://crowdtest.dev"),
   title: "CrowdTest — Human-focused app testing",
-  description: "Real testers. Real feedback. Catch UI/UX issues automation tools miss.",
-  keywords: ["QA testing", "web app testing", "bug testing", "software QA", "quality assurance", "beta testing service", "app testing platform"],
+  description:
+    "Real testers. Real feedback. Catch UI/UX issues automation tools miss.",
+  keywords: [
+    "QA testing",
+    "web app testing",
+    "bug testing",
+    "software QA",
+    "quality assurance",
+    "beta testing service",
+    "app testing platform",
+  ],
   authors: [{ name: "CrowdTest" }],
   creator: "CrowdTest",
   openGraph: {
     title: "CrowdTest — Human Testing for Indie Devs",
-    description: "Real testers help you find UI/UX problems, unclear flows, spelling mistakes, and more.",
+    description:
+      "Real testers help you find UI/UX problems, unclear flows, spelling mistakes, and more.",
     url: "https://crowdtest.dev",
     siteName: "CrowdTest",
     images: [
@@ -47,17 +57,14 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeContextProvider>
           <Toaster position="top-right" reverseOrder={false} />
           {children}
