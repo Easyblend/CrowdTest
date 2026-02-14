@@ -87,6 +87,16 @@ export default function ProjectPage() {
         loadUser();
     }, []);
 
+    const handleDeleteBug = async (bugId: number): Promise<void> => {
+        const res = await fetch(`/api/bugs/${bugId}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed");
+
+        setProject(prev => prev ? {
+            ...prev,
+            bugs: prev.bugs.filter(b => b.id !== bugId)
+        } : prev);
+    };
+
     if (loading) return FullScreenLoader();
 
     if (!project) return (
@@ -100,12 +110,17 @@ export default function ProjectPage() {
     );
 
     const handleSubmitBug = async (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: BlobPart) => {
-        if (!title || !severity) return;
+        if (!title) {
+            toast.error("Please enter a bug title");
+            return;
+        }
+        if (!severity) {
+            toast.error("Please select a severity");
+            return;
+        }
 
         setSubmitting(true);
         try {
-            const payload: any = { title, description, severity };
-
             // optionally attach image if provided
             const form = new FormData();
             form.append("title", title);
@@ -113,7 +128,7 @@ export default function ProjectPage() {
             form.append("severity", severity);
 
             if (bugImage) {
-               form.append("screenshot", new Blob([bugImage]), "bug.png");
+                form.append("screenshot", new Blob([bugImage]), "bug.png");
             }
 
             const res = await fetch(`/api/projects/${id}/bugs`, {
@@ -128,6 +143,7 @@ export default function ProjectPage() {
             setBugTitle('');
             setBugSeverity('LOW');
             setBugDescription('');
+            toast.success("Bug successfully reported")
         } catch (err) {
             toast.error("An error occurred while submitting the bug.");
         } finally {
@@ -175,7 +191,7 @@ export default function ProjectPage() {
                 )}
 
                 {/* Tester Bug Button */}
-                {user?.role === 'TESTER' || user?.role === 'ADMIN' && (
+                {(user?.role === 'TESTER' || user?.role === 'ADMIN') && (
                     <div className="mb-6">
                         <button
                             onClick={() => setShowBugForm(!showBugForm)}
@@ -214,10 +230,15 @@ export default function ProjectPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {project.bugs.map((bug) => (
-                            <div key={bug.id} onClick={() => setSelectedBug(bug)} className="cursor-pointer">
-                                <BugCard bug={bug} />
+                            <div
+                                key={bug.id}
+                                onClick={() => setSelectedBug(bug)}
+                                className="cursor-pointer"
+                            >
+                                <BugCard bug={bug} onDelete={handleDeleteBug} />
                             </div>
                         ))}
+
                     </div>
 
                     {selectedBug && (
@@ -226,7 +247,6 @@ export default function ProjectPage() {
                             onClose={() => setSelectedBug(null)}
                         />
                     )}
-
 
                 </section>
             </div>
