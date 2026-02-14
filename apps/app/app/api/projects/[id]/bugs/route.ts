@@ -91,6 +91,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   if (project.name) {
     sendBugReport({
       receiverEmail: project.user.email,
+      projectId: project.id,
       projectName: project.name,
       receiverName: project.user.name ?? "there",
       bugTitle: bug.title,

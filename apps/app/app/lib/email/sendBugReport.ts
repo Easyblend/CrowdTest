@@ -2,6 +2,7 @@ import { transporter } from "./transporter";
 
 interface BugReportEmailProps {
   receiverEmail: string;
+  projectId: number;
   projectName: string;
   receiverName: string;
   bugTitle: string;
@@ -13,6 +14,7 @@ interface BugReportEmailProps {
 export async function sendBugReport({
   receiverEmail,
   projectName,
+  projectId,
   receiverName,
   bugTitle,
   bugDescription,
@@ -25,6 +27,7 @@ export async function sendBugReport({
     subject: `New ${severity} bug reported in ${projectName}`,
     html: buildBugEmailHtml({
       projectName,
+      projectId,
       receiverName,
       bugTitle,
       bugDescription,
@@ -36,6 +39,7 @@ export async function sendBugReport({
 
 function buildBugEmailHtml({
   projectName,
+  projectId,
   receiverName,
   bugTitle,
   bugDescription,
@@ -146,7 +150,7 @@ function buildBugEmailHtml({
             <!-- CTA -->
             <tr>
               <td align="center" style="padding-top:35px;">
-                <a href="${process.env.SITE_URL}/admin"
+                <a href="${process.env.SITE_URL}/dashboard/${projectId}"
                   style="
                     background:#4f46e5;
                     color:#ffffff;
