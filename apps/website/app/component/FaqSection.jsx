@@ -26,9 +26,9 @@ export const FaqSection = () => {
                             <ChevronDown size={18} className={`${openIndex === index && "rotate-180"} transition-all duration-500 ease-in-out`} />
                         </div>
                         <div
-                            className={`grid transition-all duration-500 ease-in-out ${openIndex === index
-                                    ? "grid-rows-[1fr] opacity-100"
-                                    : "grid-rows-[0fr] opacity-0"
+                            className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${openIndex === index
+                                    ? "max-h-40 opacity-100"
+                                    : "max-h-0 opacity-0"
                                 }`}
                         >
                             <div className="overflow-hidden">
