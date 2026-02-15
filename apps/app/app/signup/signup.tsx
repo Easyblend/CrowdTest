@@ -49,7 +49,7 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-linear-to-br from-slate-50 via-white to-sky-50">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-no-repeat bg-cover">
             <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="w-full max-w-lg bg-white/90 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-2xl p-8 sm:p-10"
