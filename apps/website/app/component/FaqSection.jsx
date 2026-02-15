@@ -25,9 +25,18 @@ export const FaqSection = () => {
                             </h3>
                             <ChevronDown size={18} className={`${openIndex === index && "rotate-180"} transition-all duration-500 ease-in-out`} />
                         </div>
-                        <p className={`text-sm text-slate-600 dark:text-slate-300 transition-all duration-500 ease-in-out max-w-xl ${openIndex === index ? "opacity-100 max-h-125 translate-y-0 pt-4" : "opacity-0 max-h-0 overflow-hidden -translate-y-2"}`} >
-                            {faq.answer}
-                        </p>
+                        <div
+                            className={`grid transition-all duration-500 ease-in-out ${openIndex === index
+                                    ? "grid-rows-[1fr] opacity-100"
+                                    : "grid-rows-[0fr] opacity-0"
+                                }`}
+                        >
+                            <div className="overflow-hidden">
+                                <p className="text-sm text-slate-600 dark:text-slate-300 pt-4">
+                                    {faq.answer}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 ))}
             </div>
