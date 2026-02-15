@@ -23,7 +23,7 @@ export const FaqSection = () => {
                             <h3 className="text-base font-medium">
                                 {faq.question}
                             </h3>
-                            <ChevronDown size={18} className={`${openIndex === index && "rotate-180"} transition-all duration-300 ease-linear`} />
+                            <ChevronDown size={18} className={`${openIndex === index && "rotate-180"} transition-all duration-500 ease-in-out`} />
                         </div>
                         <p className={`text-sm text-slate-600 dark:text-slate-300 transition-all duration-500 ease-in-out max-w-xl ${openIndex === index ? "opacity-100 max-h-125 translate-y-0 pt-4" : "opacity-0 max-h-0 overflow-hidden -translate-y-2"}`} >
                             {faq.answer}

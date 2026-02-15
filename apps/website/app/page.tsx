@@ -145,6 +145,7 @@ function Section() {
       {howToUseData.map((feature, index) => (
         <div key={index} className="p-6 rounded-xl space-y-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/20 max-w-80 md:max-w-66">
           <feature.icon className="text-purple-500 size-8 mt-4" strokeWidth={1.3} />
+          <h1 className="text-base font-medium">{feature.step}</h1>
           <h3 className="text-base font-medium">{feature.title}</h3>
           <p className="text-slate-400 line-clamp-2">{feature.description}</p>
         </div>
