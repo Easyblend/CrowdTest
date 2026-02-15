@@ -21,9 +21,20 @@ export default function Navbar() {
 
     return (
         <nav className={`flex items-center justify-between fixed z-50 top-0 w-full px-6 md:px-16 lg:px-24 xl:px-32 py-4 ${openMobileMenu ? '' : 'backdrop-blur'}`}>
-            <Link href="#home">
-                <Image className="h-9 md:h-10 w-auto shrink-0" src={theme === "dark" ? "/assets/logo-light (1).png" : "/assets/logo-light (1).png"} alt="Logo" width={140} height={40} priority fetchPriority="high" />
+            <Link href="#home" className="flex items-center gap-2">
+                <Image
+                    className="h-9 md:h-10 w-auto"
+                    src="/assets/logo-light (1).png"
+                    alt="Crowdtest logo"
+                    width={40}
+                    height={40}
+                    priority
+                />
+                <span className="hidden md:block text-lg font-semibold tracking-tight">
+                    Crowd<span className="text-purple-600">Test</span>
+                </span>
             </Link>
+
             <div className="hidden items-center md:gap-8 lg:gap-9 md:flex lg:pl-20">
                 {navLinks.map((link) => (
                     <Link key={link.name} href={link.href} className="hover:text-slate-600 dark:hover:text-slate-300">
@@ -35,8 +46,8 @@ export default function Navbar() {
             <div className={`fixed inset-0 flex flex-col items-center justify-center gap-6 text-lg font-medium bg-white/60 dark:bg-black/40 backdrop-blur-md md:hidden transition duration-300 ${openMobileMenu ? "translate-x-0" : "-translate-x-full"}`}>
                 {navLinks.map((link) => (
                     <Link key={link.name} href={link.href}
-                    
-                    onClick={()=>setOpenMobileMenu(false)}>
+
+                        onClick={() => setOpenMobileMenu(false)}>
                         {link.name}
                     </Link>
                 ))}
