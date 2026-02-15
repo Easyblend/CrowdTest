@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import ThemeToggle from "@/component/ThemeToggle";
 import { FaqSection } from "@/component/FaqSection"
 import Marquee from "react-fast-marquee";
 import { marqueeData } from '../data/marqueeData'
@@ -53,7 +52,7 @@ export default function Page() {
 
 function CommunityBadge() {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3 p-1.5 pr-4 mt-46 rounded-full border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-600/20">
+    <div id="home" className="flex flex-wrap items-center justify-center gap-3 p-1.5 pr-4 mt-46 rounded-full border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-600/20">
       <div className="flex items-center -space-x-3">
         <Image
           className="size-7 rounded-full"
@@ -107,7 +106,7 @@ function CTAButton() {
 
 function SubHeader() {
   return (
-    <h3 className="text-base text-center text-slate-400 mt-28 pb-14 font-medium">
+    <h3 className="text-base text-center text-slate-400 mt-28 pb-14 font-bold">
       Backed by a community of passionate testers & founders
     </h3>
   );
