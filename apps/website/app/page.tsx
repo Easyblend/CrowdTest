@@ -9,29 +9,9 @@ import { howToUseData } from '../data/featuresData'
 import { useThemeContext } from "../context/ThemeContext";
 import SectionTitle from "@/component/SectionTitle"
 import Navbar from "@/component/Navbar"
-import React, { useEffect } from "react";
+import React from "react";
 
 export default function Page() {
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (window.location.hash) {
-        // Remove the hash from URL without reloading
-        history.replaceState(null, "", window.location.pathname + window.location.search);
-      }
-    };
-
-    // You might want a small debounce to avoid too many calls
-    let timeout: NodeJS.Timeout | null = null;
-    const handleScroll = () => {
-      if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(onScroll, 100); // 100ms debounce
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center text-center px-4 bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-no-repeat bg-cover">
