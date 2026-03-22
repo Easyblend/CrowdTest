@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ExternalLink, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ExternalLink, AlertCircle, Trash } from 'lucide-react';
 import BugReportModal from '@/component/BugReportModal';
 import BugCard from '@/component/BugCard';
 import toast from 'react-hot-toast';
@@ -47,6 +47,7 @@ export default function ProjectPage() {
     const [user, setUser] = useState<User | null>(null);
 
     const [showBugForm, setShowBugForm] = useState(false);
+    const router = useRouter();
     const [bugTitle, setBugTitle] = useState('');
     const [bugSeverity, setBugSeverity] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
     const [bugDescription, setBugDescription] = useState('');
@@ -96,6 +97,13 @@ export default function ProjectPage() {
             bugs: prev.bugs.filter(b => b.id !== bugId)
         } : prev);
     };
+
+    const handleDeleteProject = async (): Promise<void> => {
+        const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete project");
+        toast.success("Project deleted");
+        router.push('/dashboard');
+    }
 
     if (loading) return FullScreenLoader();
 
@@ -157,37 +165,53 @@ export default function ProjectPage() {
                 {/* Header */}
                 <div className="flex justify-between items-start mb-8 gap-4">
                     <div className="flex-1">
-                        <h1 className="text-5xl font-bold text-slate-900 mb-3">{project.name}</h1>
-                        <div className="flex items-center gap-2">
-                            <a
-                                href={project.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 hover:underline text-sm md:text-base break-all flex items-center gap-1"
-                            >
-                                {project.url}
-                                <ExternalLink className="w-4 h-4 shrink-0" />
-                            </a>
-                        </div>
+                        <h1 className="text-5xl font-bold text-slate-900 mb-3">
+                            {project.name}
+                        </h1>
+
+                        <a
+                            href={project.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                            {project.url}
+                            <ExternalLink className="w-4 h-4" />
+                        </a>
                     </div>
 
-                    <Link
-                        href="/dashboard"
-                        className="px-4 py-2 text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 shadow-sm transition flex items-center gap-2 whitespace-nowrap"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href="/dashboard"
+                            className="px-4 py-2 text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition flex items-center gap-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Back
+                        </Link>
+
+                        <button
+                            onClick={() => {
+                                handleDeleteProject().catch(() =>
+                                    toast.error("Failed to delete project")
+                                );
+                            }}
+                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2 shadow-sm"
+                        >
+                            <Trash className="w-4 h-4" />
+                            Delete
+                        </button>
+                    </div>
                 </div>
 
                 {/* Description */}
                 {project.description && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm hover:shadow-md transition">
+                    <div className="flex justify-between bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm hover:shadow-md transition">
                         <p className="text-slate-700 text-lg leading-relaxed">{project.description}</p>
                         <p className="text-xs text-slate-500 mt-4">
                             Created on {new Date(project.createdAt).toLocaleDateString()}
                         </p>
                     </div>
+
                 )}
 
                 {/* Tester Bug Button */}
