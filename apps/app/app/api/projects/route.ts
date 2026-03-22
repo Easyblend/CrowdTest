@@ -7,8 +7,13 @@ export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const whereClause = user.role === 'ADMIN' ?
+    {} :
+    { createdBy: user.id };
+
+
   const projects = await prisma.project.findMany({
-    where: { createdBy: user.id },
+    where: whereClause,
     include: { bugs: true }, // include bug reports
   });
 

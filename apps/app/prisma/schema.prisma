@@ -39,7 +39,7 @@ model Screenshot {
   id       Int    @id @default(autoincrement())
   url      String
   bugId    Int
-  bug   Bug @relation(fields: [bugId], references: [id], onDelete: Cascade)
+  bug      Bug @relation(fields: [bugId], references: [id], onDelete: Cascade)
 }
 
 
