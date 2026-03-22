@@ -19,7 +19,7 @@ interface Project {
 
 interface ProjectCardProps {
   project: Project;
-  setEditingProject: React.Dispatch<React.SetStateAction<Project | null>>;
+  setEditingProject?: React.Dispatch<React.SetStateAction<Project | null>>;
 }
 
 export default function ProjectCard({ project, setEditingProject }: ProjectCardProps) {
@@ -48,7 +48,7 @@ export default function ProjectCard({ project, setEditingProject }: ProjectCardP
         <div className="flex justify-end mt-4">
           <button
             onClick={() => {
-              setEditingProject(project);
+              setEditingProject && setEditingProject(project);
             }}
             className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
           >

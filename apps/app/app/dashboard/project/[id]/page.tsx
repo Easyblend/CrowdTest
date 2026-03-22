@@ -169,7 +169,7 @@ export default function ProjectPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
                     <div className="flex-1">
-                      <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-3 break-words">
+                      <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-3 wrap-break-word">
                             {project.name}
                         </h1>
 
