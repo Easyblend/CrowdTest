@@ -23,6 +23,7 @@ interface Bug {
     createdAt: string;
     projectId: number;
     createdBy: number;
+    resolved: boolean;
     screenshots: Screenshot[];
 }
 
@@ -163,6 +164,8 @@ export default function ProjectPage() {
         }
     };
 
+    const unresolvedBugs = project.bugs.filter((bug) => !bug.resolved);
+
     return (
         <main className="min-h-screen bg-linear-to-br from-slate-50 via-slate-50 to-blue-50 p-6 md:p-10">
             <div className="max-w-6xl mx-auto">
@@ -238,15 +241,16 @@ export default function ProjectPage() {
                 )}
 
                 {/* Bugs Section */}
+
                 <section>
                     <div className="flex items-center gap-3 mb-8">
                         <h2 className="text-3xl font-bold text-slate-900">Bug Reports</h2>
                         <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
-                            {project.bugs.length}
+                            {unresolvedBugs.length}
                         </span>
                     </div>
 
-                    {project.bugs.length === 0 && (
+                    {unresolvedBugs.length === 0 && (
                         <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
                             <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                             <p className="text-slate-500 text-lg">No bugs reported yet</p>
@@ -255,7 +259,7 @@ export default function ProjectPage() {
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {project.bugs.map((bug) => (
+                        {unresolvedBugs.map((bug) => (
                             <div
                                 key={bug.id}
                                 onClick={() => setSelectedBug(bug)}
@@ -275,6 +279,44 @@ export default function ProjectPage() {
                     )}
 
                 </section>
+                      {/* Resolved bug section */}
+                      <section className="mt-12">
+                        <div className="flex items-center gap-3 mb-8">
+                            <h2 className="text-3xl font-bold text-slate-900">Resolved Bugs</h2>
+                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                                {project.bugs.filter(b => b.resolved).length}
+                            </span>
+                        </div>
+
+                        {project.bugs.filter(b => b.resolved).length === 0 && (
+                            <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
+                                <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                                <p className="text-slate-500 text-lg">No resolved bugs yet</p>
+                                <p className="text-slate-400 text-sm mt-1">Keep pushing forward! 🛠️</p>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {project.bugs.filter(b => b.resolved).map((bug) => (
+                                <div
+                                    key={bug.id}
+                                    onClick={() => setSelectedBug(bug)}
+                                    className="cursor-pointer"
+                                >
+                                    <BugCard bug={bug} onDelete={handleDeleteBug} />
+                                </div>
+                            ))}
+
+                        </div>
+
+                        {selectedBug && (
+                            <BugDetailModal
+                                bug={selectedBug}
+                                onClose={() => setSelectedBug(null)}
+                            />
+                        )}
+
+                    </section>
             </div>
         </main>
     );

@@ -26,6 +26,23 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   return NextResponse.json(bug);
 }
 
+export async function PUT(req: NextRequest, { params }: RouteParams) {
+
+  const user = getUserFromRequest(req);
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+  const bugId = parseInt(id, 10);
+  if (isNaN(bugId)) return NextResponse.json({ error: 'Invalid bug id' }, { status: 400 });
+
+  const bugResolved = await prisma.bug.update({
+    where: { id: bugId },
+    data: { resolved: true },
+  });
+
+  return NextResponse.json(bugResolved);
+}
+
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
@@ -43,7 +60,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
   if (!bug) return NextResponse.json({ error: 'Bug not found' }, { status: 404 });
 
- const canDelete = user.role === 'ADMIN' || bug.project.createdBy === user.id;
+  const canDelete = user.role === 'ADMIN' || bug.project.createdBy === user.id;
   if (!canDelete) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
 
