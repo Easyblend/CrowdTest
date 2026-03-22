@@ -169,7 +169,7 @@ export default function ProjectPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
                     <div className="flex-1">
-                      <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-3 wrap-break-word">
+                      <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 wrap-break-word">
                             {project.name}
                         </h1>
 
@@ -207,8 +207,8 @@ export default function ProjectPage() {
 
                 {/* Description */}
                 {project.description && (
-                    <div className="flex justify-between bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm hover:shadow-md transition">
-                        <p className="text-slate-700 text-lg leading-relaxed">{project.description}</p>
+                    <div className="bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm hover:shadow-md transition">
+                        <p className="text-slate-700 text-md leading-relaxed">{project.description}</p>
                         <p className="text-xs text-slate-500 mt-4">
                             Created on {new Date(project.createdAt).toLocaleDateString()}
                         </p>
