@@ -99,10 +99,14 @@ export default function ProjectPage() {
     };
 
     const handleDeleteProject = async (): Promise<void> => {
-        const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Failed to delete project");
-        toast.success("Project deleted");
-        router.push('/dashboard');
+        try {
+            const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Failed to delete project");
+            toast.success("Project deleted");
+            router.push('/dashboard');
+        } catch (error) {
+            toast.error("Failed to delete project");
+        }
     }
 
     if (loading) return FullScreenLoader();
@@ -146,7 +150,7 @@ export default function ProjectPage() {
 
             if (!res.ok) throw new Error('Failed to submit bug');
             const newBug: Bug = await res.json();
-            setProject({ ...project, bugs: [newBug, ...project.bugs] });
+            setProject(prev => prev ? { ...prev, bugs: [newBug, ...prev.bugs] }: prev);
             setShowBugForm(false);
             setBugTitle('');
             setBugSeverity('LOW');
@@ -163,9 +167,9 @@ export default function ProjectPage() {
         <main className="min-h-screen bg-linear-to-br from-slate-50 via-slate-50 to-blue-50 p-6 md:p-10">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="flex justify-between items-start mb-8 gap-4">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
                     <div className="flex-1">
-                        <h1 className="text-5xl font-bold text-slate-900 mb-3">
+                      <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-3 break-words">
                             {project.name}
                         </h1>
 
@@ -191,9 +195,7 @@ export default function ProjectPage() {
 
                         <button
                             onClick={() => {
-                                handleDeleteProject().catch(() =>
-                                    toast.error("Failed to delete project")
-                                );
+                                handleDeleteProject()
                             }}
                             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2 shadow-sm"
                         >
