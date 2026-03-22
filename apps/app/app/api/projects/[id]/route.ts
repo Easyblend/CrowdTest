@@ -9,7 +9,7 @@ interface RouteParams {
 export async function GET(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const { id } = await params;
+  const { id } = await params;
   const projectId = parseInt(id, 10);
   if (isNaN(projectId)) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
@@ -21,12 +21,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
   const project = await prisma.project.findFirst({
     where: whereClause,
-    include: { 
+    include: {
       bugs: {
-      include: {
-        screenshots: true,
+        include: {
+          screenshots: true,
+        },
       },
-    },
     },
   });
 
@@ -51,21 +51,25 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     { id: projectId } :
     { id: projectId, createdBy: user.id };
 
-  const updated = await prisma.project.updateMany({
+  const updated = await prisma.project.update({
     where: whereClause,
     data,
   });
 
-  if (updated.count === 0) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
+  if (!updated) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
 
-  return NextResponse.json({ success: true });
+  const updatedProject = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  return NextResponse.json(updatedProject);
 }
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { id } = await params;
+  const { id } = await params;
   const projectId = parseInt(id, 10);
   if (isNaN(projectId)) return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
 

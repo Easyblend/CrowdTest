@@ -6,6 +6,7 @@ import LogoutBtn from '@/component/LogoutBtn';
 import ProjectCard from '@/component/ProjectCard';
 import { FullScreenLoader } from '@/component/FullScreenLoader';
 import toast from 'react-hot-toast';
+import EditProjectModal from '@/component/EditProjectModal';
 
 interface Bug {
   id: number;
@@ -18,13 +19,14 @@ interface Project {
   name: string;
   url: string;
   description?: string;
-  bugs: Bug[];
+  bugs?: Bug[];
 }
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   useEffect(() => {
     async function fetchProjects() {
@@ -44,7 +46,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleProjectCreated = (project: Project) => {
-    setProjects([project, ...projects]);
+    setProjects(prev => [project, ...prev]);
   };
 
   if (loading) {
@@ -74,7 +76,7 @@ export default function DashboardPage() {
 
           {/* Existing Projects */}
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project.id} project={project} setEditingProject={setEditingProject}/>
           ))}
         </div>
       </div>
@@ -83,6 +85,18 @@ export default function DashboardPage() {
         <AddProjectModal
           onClose={() => setShowForm(false)}
           onProjectCreated={handleProjectCreated}
+        />
+      )}
+
+      {editingProject && (
+        <EditProjectModal
+          project={editingProject}
+          onClose={() => setEditingProject(null)}
+          onProjectUpdated={(updated: Project) => {
+            setProjects(prev =>
+              prev.map(p => p.id === updated.id ? updated : p)
+            );
+          }}
         />
       )}
     </main>
