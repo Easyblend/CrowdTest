@@ -6,14 +6,12 @@ import Link from 'next/link';
 import { ArrowLeft, ExternalLink, AlertCircle, Trash } from 'lucide-react';
 import BugReportModal from '@/component/BugReportModal';
 import BugCard from '@/component/BugCard';
+import { Screenshot } from '@prisma/client';
 import toast from 'react-hot-toast';
 import { FullScreenLoader } from '@/component/FullScreenLoader';
 import BugDetailModal from '@/component/BugDetailModal';
+import BugSection from '@/component/BugSection';
 
-interface Screenshot {
-    id: number;
-    url: string;
-}
 
 interface Bug {
     id: number;
@@ -151,7 +149,7 @@ export default function ProjectPage() {
 
             if (!res.ok) throw new Error('Failed to submit bug');
             const newBug: Bug = await res.json();
-            setProject(prev => prev ? { ...prev, bugs: [newBug, ...prev.bugs] }: prev);
+            setProject(prev => prev ? { ...prev, bugs: [newBug, ...prev.bugs] } : prev);
             setShowBugForm(false);
             setBugTitle('');
             setBugSeverity('LOW');
@@ -164,7 +162,35 @@ export default function ProjectPage() {
         }
     };
 
-    const unresolvedBugs = project.bugs.filter((bug) => !bug.resolved);
+    const unresolvedBugs = project.bugs
+        .filter(b => !b.resolved)
+        .map(b => ({ ...b, screenshots: b.screenshots ?? [] }));
+
+    const handleResolveBug = (bugId: number) => {
+        setProject(prev => {
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                bugs: prev.bugs.map(b =>
+                    b.id === bugId ? { ...b, resolved: true } : b
+                ),
+            };
+        });
+    };
+
+    const handleUnResolveBug = (bugId: number) => {
+        setProject(prev => {
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                bugs: prev.bugs.map(b =>
+                    b.id === bugId ? { ...b, resolved: false } : b
+                ),
+            };
+        });
+    };
 
     return (
         <main className="min-h-screen bg-linear-to-br from-slate-50 via-slate-50 to-blue-50 p-6 md:p-10">
@@ -172,7 +198,7 @@ export default function ProjectPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
                     <div className="flex-1">
-                      <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 wrap-break-word">
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 wrap-break-word">
                             {project.name}
                         </h1>
 
@@ -242,81 +268,33 @@ export default function ProjectPage() {
 
                 {/* Bugs Section */}
 
-                <section>
-                    <div className="flex items-center gap-3 mb-8">
-                        <h2 className="text-3xl font-bold text-slate-900">Bug Reports</h2>
-                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
-                            {unresolvedBugs.length}
-                        </span>
-                    </div>
+                <BugSection
+                    title="Bug Reports"
+                    bugs={unresolvedBugs}
+                    emptyMessage="No bugs reported yet"
+                    emptySubMessage="Keep up the great work! 🎉"
+                    onBugClick={setSelectedBug}
+                    onDelete={handleDeleteBug}
+                    badgeColor="blue"
+                />
 
-                    {unresolvedBugs.length === 0 && (
-                        <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
-                            <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                            <p className="text-slate-500 text-lg">No bugs reported yet</p>
-                            <p className="text-slate-400 text-sm mt-1">Keep up the great work! 🎉</p>
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {unresolvedBugs.map((bug) => (
-                            <div
-                                key={bug.id}
-                                onClick={() => setSelectedBug(bug)}
-                                className="cursor-pointer"
-                            >
-                                <BugCard bug={bug} onDelete={handleDeleteBug} />
-                            </div>
-                        ))}
-
-                    </div>
-
-                    {selectedBug && (
-                        <BugDetailModal
-                            bug={selectedBug}
-                            onClose={() => setSelectedBug(null)}
-                        />
-                    )}
-
-                </section>
-                      {/* Resolved bug section */}
-                      <section className="mt-12">
-                        <div className="flex items-center gap-3 mb-8">
-                            <h2 className="text-3xl font-bold text-slate-900">Resolved Bugs</h2>
-                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
-                                {project.bugs.filter(b => b.resolved).length}
-                            </span>
-                        </div>
-
-                        {project.bugs.filter(b => b.resolved).length === 0 && (
-                            <div className="bg-white border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
-                                <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                                <p className="text-slate-500 text-lg">No resolved bugs yet</p>
-                                <p className="text-slate-400 text-sm mt-1">Keep pushing forward! 🛠️</p>
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {project.bugs.filter(b => b.resolved).map((bug) => (
-                                <div
-                                    key={bug.id}
-                                    onClick={() => setSelectedBug(bug)}
-                                    className="cursor-pointer"
-                                >
-                                    <BugCard bug={bug} onDelete={handleDeleteBug} />
-                                </div>
-                            ))}
-
-                        </div>
-
-                        {selectedBug && (
-                            <BugDetailModal
-                                bug={selectedBug}
-                                onClose={() => setSelectedBug(null)}
-                            />
-                        )}
-
-                    </section>
+                <BugSection
+                    title="Resolved Bugs"
+                    bugs={project.bugs.filter(b => b.resolved)}
+                    emptyMessage="No resolved bugs yet"
+                    emptySubMessage="Keep pushing forward! 🛠️"
+                    onBugClick={setSelectedBug}
+                    onDelete={handleDeleteBug}
+                    badgeColor="green"
+                />
+                {selectedBug && (
+                    <BugDetailModal
+                        bug={selectedBug}
+                        onClose={() => setSelectedBug(null)}
+                        onResolved={handleResolveBug}
+                        onUnResolved={handleUnResolveBug}
+                    />
+                )}
             </div>
         </main>
     );
