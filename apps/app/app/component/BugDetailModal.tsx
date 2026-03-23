@@ -16,31 +16,45 @@ interface Bug {
     createdAt: string;
     projectId: number;
     createdBy: number;
+    resolved: boolean;
     screenshots: Screenshot[];
 }
 
 interface BugDetailModalProps {
     bug: Bug;
     onClose: () => void;
+    onResolved: (bugId: number) => void;
+    onUnResolved: (bugId: number) => void;
 }
 
-export default function BugDetailModal({ bug, onClose }: BugDetailModalProps) {
+export default function BugDetailModal({ bug, onClose, onResolved, onUnResolved }: BugDetailModalProps) {
     const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
-    const handleResolve = async () => {
+    const handleToggleResolve = async (resolved: boolean) => {
         try {
             const response = await fetch(`/api/bugs/${bug.id}`, {
                 method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ resolved }),
             });
 
             if (!response.ok) {
-                throw new Error('Failed to resolve bug');
+                throw new Error('Failed to update bug');
             }
 
-            // Optionally, you can update the UI or refetch data here
-            onClose(); // Close the modal after resolving
+            if (resolved) {
+                onResolved(bug.id);
+                toast.success("Bug marked as resolved");
+            } else {
+                onUnResolved(bug.id);
+                toast.success("Bug marked as unresolved");
+            }
+
+            onClose();
         } catch (error) {
-            toast.error('Error resolving bug. Please try again.')
+            toast.error('Something went wrong. Please try again.');
         }
     };
 
@@ -72,10 +86,10 @@ export default function BugDetailModal({ bug, onClose }: BugDetailModalProps) {
                     <div className="flex items-center justify-between mb-4 text-sm">
                         <span
                             className={`font-medium ${bug.severity === 'HIGH'
-                                    ? 'text-red-600'
-                                    : bug.severity === 'MEDIUM'
-                                        ? 'text-yellow-600'
-                                        : 'text-green-600'
+                                ? 'text-red-600'
+                                : bug.severity === 'MEDIUM'
+                                    ? 'text-yellow-600'
+                                    : 'text-green-600'
                                 }`}
                         >
                             {bug.severity}
@@ -110,13 +124,24 @@ export default function BugDetailModal({ bug, onClose }: BugDetailModalProps) {
                             Close
                         </button>
 
-                        <button
-                            onClick={handleResolve}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
-                        >
-                            <Check size={18} />
-                            Mark as resolved
-                        </button>
+
+                        {bug.resolved ? (
+                            <button
+                                onClick={() => handleToggleResolve(false)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700 transition"
+                            >
+                                <X size={18} />
+                                Mark as unresolved
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => handleToggleResolve(true)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+                            >
+                                <Check size={18} />
+                                Mark as resolved
+                            </button>
+                        )}
                     </div>
 
                 </div>
