@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
+import slugify from 'slugify';
 
 interface RouteParams {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { id } = await params;
-  const projectId = parseInt(id, 10);
+  const { slug } = await params;
+  console.log('Received slug:', slug);
+  console.log('Fetching project with slug:', slug);
+  const projectId = parseInt(slug.split('-').pop() || '', 10);
+  console.log('Parsed project ID:', projectId);
   if (isNaN(projectId)) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
   }
@@ -39,13 +43,22 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
-  const projectId = parseInt(id, 10);
+  const { slug } = await params;
+  const projectId = parseInt(slug.split('-').pop() || '', 10);
   if (isNaN(projectId)) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
   }
 
   const data = await req.json();
+
+   let updatedData = {
+    ...data
+  };
+
+  if (data.name) {
+  updatedData.slug = slugify(data.name, { lower: true, strict: true });
+}
+
 
   const whereClause = user.role === 'ADMIN' ?
     { id: projectId } :
@@ -53,7 +66,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const updated = await prisma.project.update({
     where: whereClause,
-    data,
+    data: updatedData,
   });
 
   if (!updated) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
@@ -69,8 +82,8 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const user = getUserFromRequest(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
-  const projectId = parseInt(id, 10);
+  const { slug } = await params;
+  const projectId = parseInt(slug.split('-').pop() || '', 10);
   if (isNaN(projectId)) return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
 
   const whereClause = user.role === 'ADMIN' ?

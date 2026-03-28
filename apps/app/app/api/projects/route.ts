@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
 import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
+import slugify from 'slugify';
 
 export async function GET(req: NextRequest) {
   const user = getUserFromRequest(req);
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
 
   const { name, url, description } = await req.json();
 
+  const slug = slugify(name, { lower: true });
   if (!name || !url) {
     return NextResponse.json({ error: 'Name and URL are required' }, { status: 400 });
   }
@@ -35,6 +37,7 @@ export async function POST(req: NextRequest) {
     data: {
       name,
       url,
+      slug,
       description,
       createdBy: user.id,
     },

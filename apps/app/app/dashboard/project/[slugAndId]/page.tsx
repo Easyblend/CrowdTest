@@ -40,7 +40,7 @@ interface User {
 }
 
 export default function ProjectPage() {
-    const { id } = useParams();
+    const { slugAndId } = useParams();
     const [project, setProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState<User | null>(null);
@@ -59,7 +59,7 @@ export default function ProjectPage() {
     useEffect(() => {
         async function load() {
             try {
-                const res = await fetch(`/api/projects/${id}`);
+                const res = await fetch(`/api/projects/${slugAndId}`);
                 if (!res.ok) throw new Error('Failed to fetch project');
                 const data = await res.json();
                 setProject(data);
@@ -70,7 +70,7 @@ export default function ProjectPage() {
             }
         }
         load();
-    }, [id]);
+    }, [slugAndId]);
 
     // Load current user
     useEffect(() => {
@@ -99,7 +99,7 @@ export default function ProjectPage() {
 
     const handleDeleteProject = async (): Promise<void> => {
         try {
-            const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+            const res = await fetch(`/api/projects/${slugAndId}`, { method: "DELETE" });
             if (!res.ok) throw new Error("Failed to delete project");
             toast.success("Project deleted");
             router.push('/dashboard');
@@ -142,7 +142,7 @@ export default function ProjectPage() {
                 form.append("screenshot", new Blob([bugImage]), "bug.png");
             }
 
-            const res = await fetch(`/api/projects/${id}/bugs`, {
+            const res = await fetch(`/api/projects/${slugAndId}/bugs`, {
                 method: 'POST',
                 body: form,
             });

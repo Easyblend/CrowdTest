@@ -7,7 +7,7 @@ import { sendBugReport } from '@/lib/email/sendBugReport';
 
 
 interface RouteParams {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 
@@ -31,8 +31,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
-  const projectId = parseInt(id, 10);
+  const { slug } = await params;
+  const projectId = parseInt(slug.split('-').pop() || '', 10);
 
   if (isNaN(projectId))
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
