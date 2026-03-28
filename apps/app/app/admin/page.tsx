@@ -14,6 +14,7 @@ interface Bug {
 interface Project {
   id: number;
   name: string;
+  slug: string;
   url: string;
   description?: string;
   bugs: Bug[];
