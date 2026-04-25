@@ -2,7 +2,7 @@ import { transporter } from "./transporter";
 
 interface BugReportEmailProps {
   receiverEmail: string;
-  projectId: number;
+  projectId: string;
   projectName: string;
   receiverName: string;
   bugTitle: string;

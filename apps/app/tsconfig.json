@@ -13,7 +13,8 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-      "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./app/*"]
     },
@@ -29,7 +30,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "global.d.ts"
   ],
   "exclude": ["node_modules"]
 }

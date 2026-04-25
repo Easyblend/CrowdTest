@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 interface Project {
   id: number;
   name: string;
+  slug: string;
   url: string;
   description?: string;
 }

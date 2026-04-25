@@ -12,6 +12,8 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.5.0",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
     "@types/nodemailer": "^7.0.4",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",
@@ -26,7 +28,8 @@
     "react-dom": "19.2.0",
     "react-fast-marquee": "^1.6.5",
     "react-hook-form": "^7.67.0",
-    "react-hot-toast": "^2.6.0"
+    "react-hot-toast": "^2.6.0",
+    "slugify": "^1.6.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -40,6 +43,6 @@
     "eslint-config-next": "16.0.6",
     "prisma": "^7.5.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^6.0.3"
   }
 }

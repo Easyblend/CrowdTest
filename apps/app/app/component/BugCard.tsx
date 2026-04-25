@@ -5,7 +5,7 @@ import { FC, useState } from 'react';
 import DeleteBugModal from './DeleteBugModal';
 
 interface Bug {
-    id: number;
+    id: string;
     title: string;
     description: string;
     severity: 'HIGH' | 'MEDIUM' | 'LOW';
@@ -14,7 +14,7 @@ interface Bug {
 
 interface BugCardProps {
     bug: Bug;
-    onDelete: (id: number) => void;
+    onDelete: (id: string) => void;
 }
 
 const BugCard: FC<BugCardProps> = ({ bug, onDelete }) => {

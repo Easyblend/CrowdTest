@@ -1,23 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
+import slugify from 'slugify';
+import { createSupabaseServer } from '@/lib/supabaseServer';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const user = getUserFromRequest(req);
+  const supabase = await createSupabaseServer()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
-  const projectId = parseInt(id, 10);
-  if (isNaN(projectId)) {
+
+  const projectId = String(id)
+
+  console.log('projectId:', projectId, typeof projectId);
+
+  if (!projectId) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
   }
 
-  const whereClause = user.role === 'ADMIN' ?
+
+  let dbUser = await prisma.user.findUnique({
+    where: { auth_id: user.id }
+  })
+
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        auth_id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || 'Unnamed User',
+      },
+    })
+  }
+
+  const whereClause = dbUser.role === 'ADMIN' ?
     { id: projectId } :
-    { id: projectId, createdBy: user.id };
+    { id: projectId, createdBy: dbUser.id };
 
   const project = await prisma.project.findFirst({
     where: whereClause,
@@ -36,24 +63,52 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
-  const user = getUserFromRequest(req);
+
+  const supabase = await createSupabaseServer()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  const projectId = parseInt(id, 10);
-  if (isNaN(projectId)) {
+  const projectId = String(id);
+  if (!projectId) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
   }
 
   const data = await req.json();
 
-  const whereClause = user.role === 'ADMIN' ?
+  let updatedData = {
+    ...data
+  };
+
+  if (data.name) {
+    updatedData.slug = slugify(data.name, { lower: true, strict: true });
+  }
+
+  let dbUser = await prisma.user.findUnique({
+    where: { auth_id: user.id }
+  })
+
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        auth_id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || 'Unnamed User',
+      },
+    })
+  }
+
+  const whereClause = dbUser.role === 'ADMIN' ?
     { id: projectId } :
-    { id: projectId, createdBy: user.id };
+    { id: projectId, createdBy: dbUser.id };
 
   const updated = await prisma.project.update({
     where: whereClause,
-    data,
+    data: updatedData,
   });
 
   if (!updated) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
@@ -66,16 +121,38 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
-  const user = getUserFromRequest(req);
+  const supabase = await createSupabaseServer()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  const projectId = parseInt(id, 10);
-  if (isNaN(projectId)) return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
+  const projectId = String(id);
+  if (!projectId) {
+    return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
+  }
 
-  const whereClause = user.role === 'ADMIN' ?
+  let dbUser = await prisma.user.findUnique({
+    where: { auth_id: user.id }
+  })
+
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        auth_id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || 'Unnamed User',
+      },
+    })
+  }
+
+
+  const whereClause = dbUser.role === 'ADMIN' ?
     { id: projectId } :
-    { id: projectId, createdBy: user.id };
+    { id: projectId, createdBy: dbUser.id };
 
   const deleted = await prisma.project.deleteMany({
     where: whereClause,

@@ -6,8 +6,8 @@ import toast from "react-hot-toast";
 interface Props {
   open: boolean;
   onClose: () => void;
-  bugId: number;
-  onDelete: (id: number) => void;
+  bugId: string;
+  onDelete: (id: string) => void;
 }
 
 export default function DeleteBugModal({ open, onClose, bugId, onDelete }: Props) {
