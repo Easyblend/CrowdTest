@@ -4,18 +4,18 @@ import { Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Screenshot {
-    id: number;
+    id: string;
     url: string;
 }
 
 interface Bug {
-    id: number;
+    id: string;
     title: string;
     description: string;
     severity: 'HIGH' | 'MEDIUM' | 'LOW';
     createdAt: string;
-    projectId: number;
-    createdBy: number;
+    projectId: string;
+    createdBy: string;
     resolved: boolean;
     screenshots: Screenshot[];
 }
@@ -23,8 +23,8 @@ interface Bug {
 interface BugDetailModalProps {
     bug: Bug;
     onClose: () => void;
-    onResolved: (bugId: number) => void;
-    onUnResolved: (bugId: number) => void;
+    onResolved: (bugId: string) => void;
+    onUnResolved: (bugId: string) => void;
 }
 
 export default function BugDetailModal({ bug, onClose, onResolved, onUnResolved }: BugDetailModalProps) {

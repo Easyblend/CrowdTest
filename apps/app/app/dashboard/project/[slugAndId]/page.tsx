@@ -14,19 +14,19 @@ import BugSection from '@/component/BugSection';
 
 
 interface Bug {
-    id: number;
+    id: string;
     title: string;
     description: string;
     severity: 'HIGH' | 'MEDIUM' | 'LOW';
     createdAt: string;
-    projectId: number;
-    createdBy: number;
+    projectId: string;
+    createdBy: string;
     resolved: boolean;
     screenshots: Screenshot[];
 }
 
 interface Project {
-    id: number;
+    id: string;
     name: string;
     url: string;
     description?: string;
@@ -35,7 +35,7 @@ interface Project {
 }
 
 interface User {
-    id: number;
+    id: string;
     role: 'DEV' | 'TESTER' | 'ADMIN';
 }
 
@@ -79,6 +79,7 @@ export default function ProjectPage() {
                 const res = await fetch('/api/me'); // /api/me returning { id, role }
                 if (!res.ok) throw new Error('Failed to fetch user');
                 const data: User = await res.json();
+                console.log('Fetched user:', data);
                 setUser(data);
             } catch (err) {
                 toast.error("This didn't work.")
@@ -87,7 +88,7 @@ export default function ProjectPage() {
         loadUser();
     }, []);
 
-    const handleDeleteBug = async (bugId: number): Promise<void> => {
+    const handleDeleteBug = async (bugId: string): Promise<void> => {
         const res = await fetch(`/api/bugs/${bugId}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Failed");
 
@@ -166,7 +167,7 @@ export default function ProjectPage() {
         .filter(b => !b.resolved)
         .map(b => ({ ...b, screenshots: b.screenshots ?? [] }));
 
-    const handleResolveBug = (bugId: number) => {
+    const handleResolveBug = (bugId: string) => {
         setProject(prev => {
             if (!prev) return prev;
 
@@ -179,7 +180,7 @@ export default function ProjectPage() {
         });
     };
 
-    const handleUnResolveBug = (bugId: number) => {
+    const handleUnResolveBug = (bugId: string) => {
         setProject(prev => {
             if (!prev) return prev;
 

@@ -12,6 +12,8 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.5.0",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
     "@types/nodemailer": "^7.0.4",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",

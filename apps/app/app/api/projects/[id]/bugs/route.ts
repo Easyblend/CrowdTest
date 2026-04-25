@@ -4,10 +4,11 @@ import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
 import cloudinary from '@/lib/cloudinary';
 import { sendBugReport } from '@/lib/email/sendBugReport';
+import { createSupabaseServer } from '@/lib/supabaseServer';
 
 
 interface RouteParams {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
 
@@ -27,15 +28,37 @@ function uploadToCloudinary(buffer: Buffer): Promise<string> {
 
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
-  const user = getUserFromRequest(req);
+
+  const supabase = await createSupabaseServer()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { slug } = await params;
-  const projectId = parseInt(slug.split('-').pop() || '', 10);
+  let dbUser = await prisma.user.findUnique({
+      where: { auth_id: user.id }
+    })
+  
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
+        data: {
+          auth_id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || 'Unnamed User',
+        },
+      })
+    }
 
-  if (isNaN(projectId))
+  const { id } = await params;
+  const projectId = String(id); // Assuming the ID passed is the project ID
+
+
+  if (!projectId) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
+  }
 
   const formData = await req.formData();
   const title = formData.get('title') as string;
@@ -67,7 +90,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       severity,
       description,
       projectId,
-      createdBy: user.id,
+      createdBy: dbUser.id,
     },
   });
 

@@ -7,10 +7,10 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
+  id       String    @id @default(uuid())
+  auth_id  String @unique
   name     String
   email    String @unique
-  password String
   projects Project[]
   role     Role   @default(DEV)
   bugs     Bug[]
@@ -23,41 +23,41 @@ enum Role {
 }
 
 model Bug {
-  id          Int      @id @default(autoincrement())
+  id          String    @id @default(uuid())
   title       String
   description String
   severity    String
   createdAt   DateTime @default(now())
-  projectId   Int
+  projectId   String
   project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy   Int
+  createdBy   String
   user        User    @relation(fields: [createdBy], references: [id])
   resolved     Boolean  @default(false)
   screenshots Screenshot[]
 }
 
 model Screenshot {
-  id       Int    @id @default(autoincrement())
+  id       String    @id @default(uuid())
   url      String
-  bugId    Int
+  bugId    String
   bug      Bug @relation(fields: [bugId], references: [id], onDelete: Cascade)
 }
 
 
 model Project {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(uuid())
   name        String
   url         String
   slug        String    @unique
   description String?
-  createdBy   Int
+  createdBy   String
   user        User      @relation(fields: [createdBy], references: [id])
   bugs        Bug[]
   createdAt   DateTime  @default(now())
 }
 
 model Waitlist {
-  id                Int      @id @default(autoincrement())
+  id                String    @id @default(uuid())
   email             String   @unique
   confirmed         Boolean  @default(false)
   confirmationToken String?  

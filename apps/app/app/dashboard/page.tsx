@@ -32,7 +32,10 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const res = await fetch('/api/projects');
+        const res = await fetch('/api/projects',
+          { credentials: 'include' }
+        );
+        
         if (!res.ok) throw new Error('Failed to fetch projects');
         const data: Project[] = await res.json();
         setProjects(data);
@@ -77,7 +80,7 @@ export default function DashboardPage() {
 
           {/* Existing Projects */}
           {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} setEditingProject={setEditingProject}/>
+            <ProjectCard key={project.id} project={project} setEditingProject={setEditingProject} />
           ))}
         </div>
       </div>

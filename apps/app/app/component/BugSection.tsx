@@ -4,13 +4,13 @@ import React from 'react'
 import BugCard from './BugCard';
 
 interface Bug {
-    id: number;
+    id: string;
     title: string;
     description: string;
     severity: 'HIGH' | 'MEDIUM' | 'LOW';
     createdAt: string;
-    projectId: number;
-    createdBy: number;
+    projectId: string;
+    createdBy: string;
     resolved: boolean;
     screenshots: Screenshot[];
 }
@@ -21,7 +21,7 @@ interface BugSectionProps {
     emptyMessage: string;
     emptySubMessage: string;
     onBugClick: (bug: Bug) => void;
-    onDelete: (bugId: number) => void;
+    onDelete: (bugId: string) => void;
     badgeColor: string;
 }
 

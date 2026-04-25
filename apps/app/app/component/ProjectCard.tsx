@@ -28,7 +28,7 @@ export default function ProjectCard({ project, setEditingProject }: ProjectCardP
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:border-slate-300 transition-all duration-200 cursor-pointer">
       <div>
 
-        <Link href={`/dashboard/project/${project.slug}-${project.id}`} className="block">
+        <Link href={`/dashboard/project/${project.id}`} className="block">
           <h2 className="text-lg font-semibold text-slate-900 mb-2">
             {project.name}
           </h2>

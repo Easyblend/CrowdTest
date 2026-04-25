@@ -3,14 +3,35 @@ import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
 import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
 import slugify from 'slugify';
+import { createSupabaseServer } from '@/lib/supabaseServer';
 
 export async function GET(req: NextRequest) {
-  const user = getUserFromRequest(req);
+
+  const supabase = await createSupabaseServer()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const whereClause = user.role === 'ADMIN' ?
+  let dbUser = await prisma.user.findUnique({
+    where: { auth_id: user.id }
+  })
+
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        auth_id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || 'Unnamed User',
+      },
+    })
+  }
+
+  const whereClause = dbUser.role === 'ADMIN' ?
     {} :
-    { createdBy: user.id };
+    { createdBy: dbUser.id };
 
 
   const projects = await prisma.project.findMany({
@@ -22,7 +43,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = getUserFromRequest(req);
+
+  const supabase = await createSupabaseServer()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -33,13 +60,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Name and URL are required' }, { status: 400 });
   }
 
+  let dbUser = await prisma.user.findUnique({
+    where: { auth_id: user.id }
+  })
+
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        auth_id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || 'Unnamed User',
+      },
+    })
+  }
+
   const project = await prisma.project.create({
     data: {
       name,
       url,
       slug,
       description,
-      createdBy: user.id,
+      createdBy: dbUser.id,
     },
     include: { bugs: true },
   });
