@@ -250,6 +250,9 @@ export default function ProjectPage() {
                                     month: "short",
                                     day: "numeric",
                                     year: "numeric",
+                                })} • {new Date(project.createdAt).toLocaleTimeString(undefined, {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
                                 })}
                             </span>
                         </div>
