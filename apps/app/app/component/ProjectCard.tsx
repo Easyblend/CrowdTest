@@ -25,49 +25,46 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project, setEditingProject }: ProjectCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:border-slate-300 transition-all duration-200 cursor-pointer">
-      <div>
+    <div className="bg-white rounded-lg shadow-md border border-slate-200 p-6 hover:shadow-xl hover:border-blue-300 transition-all duration-300 group">
+      <div className="flex flex-col h-full">
+        <Link href={`/dashboard/project/${project.id}`} className="block flex-1 hover:no-underline">
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+              {project.name}
+            </h2>
 
-        <Link href={`/dashboard/project/${project.id}`} className="block">
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">
-            {project.name}
-          </h2>
+            {project.description && (
+              <p className="text-slate-600 text-sm line-clamp-2">{project.description}</p>
+            )}
+          </div>
 
-          {project.description && (
-            <p className="text-slate-600 text-sm mb-3">{project.description}</p>
-          )}
-
-          <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-            <span className="text-slate-600 text-sm font-medium">Bugs reported:</span>
-            <span className="bg-red-50 text-red-700 font-semibold rounded-full w-8 h-8 flex items-center justify-center">
-              {project.bugs ? project.bugs.length : 0}
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 mt-auto">
+            <span className="text-slate-600 text-sm font-medium">Bugs:</span>
+            <span className="bg-red-100 text-red-700 font-bold rounded-full px-3 py-1 text-sm">
+              {project.bugs?.length ?? 0}
             </span>
           </div>
         </Link>
 
-        {/* Actions OUTSIDE link */}
-        <div className="flex justify-end mt-4">
+        <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t border-slate-100">
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline transition-colors flex-1"
+          >
+            Visit →
+          </a>
           <button
-            onClick={() => {
-              setEditingProject && setEditingProject(project);
-            }}
-            className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
+            onClick={() => setEditingProject?.(project)}
+            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-1"
+            title="Edit project"
           >
             <Edit className="w-4 h-4" />
-            Edit
+            <span className="text-sm font-medium">Edit</span>
           </button>
         </div>
       </div>
-
-      <a
-        href={project.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 font-medium text-sm mb-4 block hover:underline"
-      >
-        Visit Project →
-      </a>
-
     </div>
   );
 }

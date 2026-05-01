@@ -194,11 +194,11 @@ export default function ProjectPage() {
     };
 
     return (
-        <main className="min-h-screen bg-linear-to-br from-slate-50 via-slate-50 to-blue-50 p-6 md:p-10">
+        <main className="h-max min-h-screen bg-linear-to-br from-slate-50 via-slate-50 to-blue-50 p-6 md:p-5">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
-                    <div className="flex-1">
+                    <div>
                         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 wrap-break-word">
                             {project.name}
                         </h1>
@@ -235,28 +235,64 @@ export default function ProjectPage() {
                     </div>
                 </div>
 
-                {/* Description */}
-                {project.description && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm hover:shadow-md transition">
-                        <p className="text-slate-700 text-md leading-relaxed">{project.description}</p>
-                        <p className="text-xs text-slate-500 mt-4">
-                            Created on {new Date(project.createdAt).toLocaleDateString()}
+                {/* Project Overview */}
+                <div className="grid gap-6 lg:grid-cols-[1.8fr_0.95fr] mb-8">
+                    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                            <div>
+                                <h2 className="text-xl font-semibold text-slate-900">Project overview</h2>
+                                <p className="text-sm text-slate-500 mt-1">
+                                    A quick summary and timeline for this project.
+                                </p>
+                            </div>
+                            <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-3 py-1 text-xs font-medium">
+                                Created {new Date(project.createdAt).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                })}
+                            </span>
+                        </div>
+
+                        <p className="text-slate-700 text-md leading-relaxed min-h-[120px]">
+                            {project.description ?? "No description has been added for this project yet. Use the bug report form below to share issues and help improve the experience."}
                         </p>
                     </div>
 
-                )}
+                    <div className="space-y-4">
+                        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                            <h3 className="text-lg font-semibold text-slate-900 mb-3">Project stats</h3>
+                            <div className="grid gap-3">
+                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+                                    <span className="text-sm text-slate-600">Open bugs</span>
+                                    <span className="text-sm font-semibold text-slate-900">{unresolvedBugs.length}</span>
+                                </div>
+                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+                                    <span className="text-sm text-slate-600">Resolved bugs</span>
+                                    <span className="text-sm font-semibold text-slate-900">{project.bugs.filter(b => b.resolved).length}</span>
+                                </div>
+                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+                                    <span className="text-sm text-slate-600">Total reports</span>
+                                    <span className="text-sm font-semibold text-slate-900">{project.bugs.length}</span>
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Tester Bug Button */}
-                {(user?.role === 'TESTER' || user?.role === 'ADMIN') && (
-                    <div className="mb-6">
-                        <button
-                            onClick={() => setShowBugForm(!showBugForm)}
-                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                        >
-                            {showBugForm ? 'Cancel' : 'Report Bug'}
-                        </button>
+                        {(user?.role === 'TESTER' || user?.role === 'ADMIN') && (
+                            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition">
+                                <p className="text-slate-700 text-sm mb-4">
+                                    Share new issues or improvements with the team.
+                                </p>
+                                <button
+                                    onClick={() => setShowBugForm(!showBugForm)}
+                                    className="w-full px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition font-medium"
+                                >
+                                    {showBugForm ? 'Cancel' : 'Report a bug'}
+                                </button>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
 
                 {/* Bug Form */}
                 {showBugForm && (

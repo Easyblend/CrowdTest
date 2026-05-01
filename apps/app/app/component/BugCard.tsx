@@ -28,15 +28,17 @@ const BugCard: FC<BugCardProps> = ({ bug, onDelete }) => {
     };
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg hover:border-slate-300 transition duration-200">
-            <div className="flex justify-between items-start gap-3 mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 flex-1">
-                    {bug.title}
-                </h3>
+        <div className="bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer">
+            <div className="flex justify-between items-start gap-3 mb-3">
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-slate-900 truncate hover:text-blue-600 transition">
+                        {bug.title}
+                    </h3>
+                </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${severityStyles[bug.severity]}`}
+                        className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${severityStyles[bug.severity]}`}
                     >
                         {bug.severity}
                     </span>
@@ -46,22 +48,28 @@ const BugCard: FC<BugCardProps> = ({ bug, onDelete }) => {
                             e.stopPropagation();
                             setOpen(true);
                         }}
-                        className="text-red-500 hover:text-red-600 p-1 rounded hover:bg-red-50 transition"
+                        className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"
+                        aria-label="Delete bug"
                     >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                     </button>
                 </div>
             </div>
 
-            <p className="text-slate-600 text-sm mb-4 leading-relaxed">{bug.description}</p>
-
-            <p className="text-xs text-slate-500 border-t border-slate-100 pt-3">
-                📅 {new Date(bug.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                })}
+            <p className="text-slate-600 text-sm mb-3 line-clamp-2 leading-relaxed">
+                {bug.description}
             </p>
+
+            <div className="flex items-center text-xs text-slate-500 border-t border-slate-100 pt-3">
+                <span>📅</span>
+                <span className="ml-1.5">
+                    {new Date(bug.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                    })}
+                </span>
+            </div>
 
             <DeleteBugModal
                 open={open}

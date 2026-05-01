@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getUserFromRequest } from '@/lib/auth';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
 
@@ -21,8 +20,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
   const projectId = String(id)
 
-  console.log('projectId:', projectId, typeof projectId);
-
   if (!projectId) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
   }
@@ -33,13 +30,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   })
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        auth_id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || 'Unnamed User',
-      },
-    })
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const whereClause = dbUser.role === 'ADMIN' ?
@@ -93,14 +84,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   })
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        auth_id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || 'Unnamed User',
-      },
-    })
-  }
+  return NextResponse.json({ error: "User not found" }, { status: 404 });
+}
 
   const whereClause = dbUser.role === 'ADMIN' ?
     { id: projectId } :
@@ -140,15 +125,8 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   })
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        auth_id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || 'Unnamed User',
-      },
-    })
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
-
 
   const whereClause = dbUser.role === 'ADMIN' ?
     { id: projectId } :

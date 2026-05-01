@@ -15,18 +15,12 @@ export async function GET(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let dbUser = await prisma.user.findUnique({
+  const dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
   })
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        auth_id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || 'Unnamed User',
-      },
-    })
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const whereClause = dbUser.role === 'ADMIN' ?
@@ -65,13 +59,7 @@ export async function POST(req: NextRequest) {
   })
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        auth_id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || 'Unnamed User',
-      },
-    })
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const project = await prisma.project.create({
