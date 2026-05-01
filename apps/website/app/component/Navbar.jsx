@@ -64,7 +64,7 @@ export default function Navbar() {
 
                     {/* Sign up CTA */}
                     <Link
-                        href="/signup"
+                        href="https://app.crowdtest.dev/signup"
                         className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition"
                     >
                         Sign up
@@ -107,7 +107,7 @@ export default function Navbar() {
 
                 {/* Mobile CTA */}
                 <Link
-                    href="/signup"
+                    href=""
                     onClick={() => setOpenMobileMenu(false)}
                     className="mt-4 px-6 py-3 text-white bg-purple-600 hover:bg-purple-700 rounded-md transition"
                 >
