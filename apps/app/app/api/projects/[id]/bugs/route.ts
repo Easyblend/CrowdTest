@@ -39,18 +39,13 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let dbUser = await prisma.user.findUnique({
-      where: { auth_id: user.id }
-    })
-  
-    if (!dbUser) {
-      dbUser = await prisma.user.create({
-        data: {
-          auth_id: user.id,
-          email: user.email!,
-          name: user.user_metadata?.name || 'Unnamed User',
-        },
-      })
-    }
+    where: { auth_id: user.id }
+  })
+
+ if (!dbUser) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
 
   const { id } = await params;
   const projectId = String(id); // Assuming the ID passed is the project ID

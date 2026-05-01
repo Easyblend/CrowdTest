@@ -6,24 +6,23 @@ import { prisma } from '@/lib/prisma';
 export async function GET(req: NextRequest) {
   const supabase = await createSupabaseServer()
   
-    const {
+       const {
       data: { user },
     } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let dbUser = await prisma.user.findUnique({
-      where: { auth_id: user.id }
-    })
-  
-    if (!dbUser) {
-      dbUser = await prisma.user.create({
-        data: {
-          auth_id: user.id,
-          email: user.email!,
-          name: user.user_metadata?.name || 'Unnamed User',
-        },
-      })
-    }
-    
-  return NextResponse.json(dbUser);
+   
+const dbUser = await prisma.user.upsert({
+  where: { auth_id: user.id },
+  update: {},
+  create: {
+    auth_id: user.id,
+    email: user.email!,
+    name: user.user_metadata?.name || "Unnamed User",
+    avatar_url: user.user_metadata?.avatar_url || null,
+    role: "DEV",
+  }
+})
+
+return NextResponse.json(dbUser)
 }

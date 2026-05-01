@@ -25,13 +25,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   })
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        auth_id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || 'Unnamed User',
-      },
-    })
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const bug = await prisma.bug.findFirst({
