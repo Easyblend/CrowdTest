@@ -63,10 +63,13 @@ const BugCard: FC<BugCardProps> = ({ bug, onDelete }) => {
             <div className="flex items-center text-xs text-slate-500 border-t border-slate-100 pt-3">
                 <span>📅</span>
                 <span className="ml-1.5">
-                    {new Date(bug.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
+                    Created {new Date(bug.createdAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                    })} • {new Date(bug.createdAt).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
                     })}
                 </span>
             </div>
