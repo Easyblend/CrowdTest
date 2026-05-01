@@ -53,9 +53,9 @@ export default function DashboardPage() {
     setProjects(prev => [project, ...prev]);
   };
 
-  if (loading) {
-    return FullScreenLoader();
-  }
+if (loading) {
+  return <FullScreenLoader />;
+}
 
   return (
     <main className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
@@ -65,16 +65,17 @@ export default function DashboardPage() {
             <h1 className="text-4xl font-bold text-slate-900">Dashboard</h1>
             <p className="text-slate-600 mt-1">Manage your projects and bugs</p>
           </div>
-          <LogoutBtn />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {/* Add Project Card */}
           <div
-            className="bg-white border-2 border-dashed border-blue-300 rounded-xl shadow-sm p-6 flex flex-col justify-center items-center cursor-pointer hover:border-blue-500 hover:shadow-md transition-all duration-200"
+            className="bg-white border-2 border-dashed border-blue-300 rounded-xl shadow-sm p-6 flex flex-col justify-center items-center cursor-pointer hover:border-blue-500 hover:shadow-lg hover:scale-105 transition-all duration-300 group"
             onClick={() => setShowForm(true)}
           >
-            <p className="text-4xl font-bold text-blue-500 mb-2">+</p>
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
+              <span className="text-2xl font-bold text-blue-500">+</span>
+            </div>
             <p className="text-slate-700 font-medium text-center">Add New Project</p>
           </div>
 

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 type FormData = {
   email: string
@@ -25,7 +26,8 @@ const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
     if (error) {
       setMessage(error.message)
     } else {
-      setMessage('Password reset link sent! Check your email.')
+      setMessage('Reset link sent. Check your email (and spam folder).')
+      toast.success('Reset link sent! Check your email.')
     }
 
     setLoading(false)
