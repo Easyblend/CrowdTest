@@ -121,45 +121,49 @@ export default function ProjectPage() {
         </div>
     );
 
-    const handleSubmitBug = async (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: BlobPart) => {
-        if (!title) {
-            toast.error("Please enter a bug title");
-            return;
-        }
-        if (!severity) {
-            toast.error("Please select a severity");
-            return;
-        }
-
-        setSubmitting(true);
+    const handleSubmitBug = async (
+        title: string,
+        description: string,
+        severity: "LOW" | "MEDIUM" | "HIGH",
+        bugImage?: File
+    ) => {
         try {
-            // optionally attach image if provided
             const form = new FormData();
             form.append("title", title);
             form.append("description", description);
             form.append("severity", severity);
 
             if (bugImage) {
-                form.append("screenshot", new Blob([bugImage]), "bug.png");
+                form.append("screenshot", bugImage);
             }
 
             const res = await fetch(`/api/projects/${slugAndId}/bugs`, {
-                method: 'POST',
+                method: "POST",
                 body: form,
             });
 
-            if (!res.ok) throw new Error('Failed to submit bug');
-            const newBug: Bug = await res.json();
-            setProject(prev => prev ? { ...prev, bugs: [newBug, ...prev.bugs] } : prev);
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.error || "Failed to submit bug");
+            }
+
+            const newBug = await res.json();
+
+            setProject(prev =>
+                prev
+                    ? {
+                        ...prev,
+                        bugs: [newBug, ...prev.bugs],
+                    }
+                    : prev
+            );
+
             setShowBugForm(false);
-            setBugTitle('');
-            setBugSeverity('LOW');
-            setBugDescription('');
-            toast.success("Bug successfully reported")
+
+            toast.success("Bug successfully reported");
         } catch (err) {
-            toast.error("An error occurred while submitting the bug.");
-        } finally {
-            setSubmitting(false);
+            toast.error(err instanceof Error ? err.message : "Failed to submit bug");
+            throw err; // 🔥 IMPORTANT so child knows it failed
         }
     };
 

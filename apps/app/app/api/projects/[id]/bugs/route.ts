@@ -1,24 +1,29 @@
 // app/api/projects/[id]/bugs/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getUserFromRequest } from '@/lib/auth';
-import cloudinary from '@/lib/cloudinary';
-import { sendBugReport } from '@/lib/email/sendBugReport';
-import { createSupabaseServer } from '@/lib/supabaseServer';
 
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import cloudinary from "@/lib/cloudinary";
+import { sendBugReport } from "@/lib/email/sendBugReport";
+import { createSupabaseServer } from "@/lib/supabaseServer";
+import { logAudit } from "@/lib/audit";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-
-function uploadToCloudinary(buffer: Buffer): Promise<string> {
+function uploadToCloudinary(
+  buffer: Buffer
+): Promise<{ url: string; public_id: string }> {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder: "bugs" },
       (error, result) => {
-        if (error) reject(error);
-        else resolve(result!.secure_url);
+        if (error) return reject(error);
+
+        resolve({
+          url: result!.secure_url,
+          public_id: result!.public_id,
+        });
       }
     );
 
@@ -26,59 +31,68 @@ function uploadToCloudinary(buffer: Buffer): Promise<string> {
   });
 }
 
-
 export async function POST(req: NextRequest, { params }: RouteParams) {
-
-  const supabase = await createSupabaseServer()
+  const supabase = await createSupabaseServer();
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (!user)
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  let dbUser = await prisma.user.findUnique({
-    where: { auth_id: user.id }
-  })
+  const dbUser = await prisma.user.findUnique({
+    where: { auth_id: user.id },
+  });
 
- if (!dbUser) {
+  if (!dbUser)
     return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
 
   const { id } = await params;
-  const projectId = String(id); // Assuming the ID passed is the project ID
+  const projectId = String(id);
 
-
-  if (!projectId) {
-    return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
-  }
+  if (!projectId)
+    return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
 
   const formData = await req.formData();
-  const title = formData.get('title') as string;
-  const severity = formData.get('severity') as string;
-  const description = formData.get('description') as string;
-  const file = formData.get('screenshot') as File | null;
+  const title = formData.get("title") as string;
+  const severity = formData.get("severity") as string;
+  const description = formData.get("description") as string;
+  const file = formData.get("screenshot") as File | null;
 
   if (!title || !severity)
     return NextResponse.json(
-      { error: 'Title and severity required' },
+      { error: "Title and severity required" },
       { status: 400 }
     );
 
-  // Fetch project + owner
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: {
-      user: true,
-    }
+    include: { user: true },
   });
 
   if (!project)
-    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
-  // Create bug
+  const canReport =
+    dbUser.role === "ADMIN" || project.createdBy === dbUser.id;
+
+  if (!canReport)
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  // -------------------------------
+  // 🔥 1. UPLOAD FIRST (FAIL FAST)
+  // -------------------------------
+  let upload: { url: string; public_id: string } | null = null;
+
+  if (file) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    upload = await uploadToCloudinary(buffer);
+  }
+
+  // -------------------------------
+  // 🐞 2. CREATE BUG ONLY IF UPLOAD OK
+  // -------------------------------
   const bug = await prisma.bug.create({
     data: {
       title,
@@ -89,35 +103,57 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     },
   });
 
-  let screenshotUrl: string | undefined;
-
-  // Upload screenshot if exists
-  if (file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    screenshotUrl = await uploadToCloudinary(buffer);
-
+  // -------------------------------
+  // 🖼 3. SAVE SCREENSHOT
+  // -------------------------------
+  if (upload) {
+  try {
     await prisma.screenshot.create({
       data: {
-        url: screenshotUrl,
+        url: upload.url,
+        public_id: upload.public_id,
         bugId: bug.id,
       },
     });
+  } catch (error) {
+    // If saving screenshot fails, delete the uploaded image to avoid orphaned files
+    await cloudinary.uploader.destroy(upload.public_id);
+    // Also delete the created bug since we couldn't save the screenshot
+    await prisma.bug.delete({ where: { id: bug.id } });
+    return NextResponse.json({ error: "Failed to save screenshot" }, { status: 500 });
+  }
   }
 
-  // Fire-and-forget email to project owner
-  if (project.name) {
-    sendBugReport({
-      receiverEmail: project.user.email,
-      projectId: project.id,
-      projectName: project.name,
-      receiverName: project.user.name ?? "there",
-      bugTitle: bug.title,
-      bugDescription: bug.description,
-      severity: bug.severity,
-      screenshotUrl,
-    }).catch(console.error);
-  }
+  // -------------------------------
+  // 📊 4. AUDIT
+  // -------------------------------
+  await logAudit({
+    userId: dbUser.id,
+    action: "BUG_CREATED",
+    entityType: "bug",
+    entityId: bug.id,
+    metadata: {
+      title,
+      severity,
+      projectId,
+      screenshot: upload?.url,
+    },
+    req,
+  });
+
+  // -------------------------------
+  // 📧 5. EMAIL
+  // -------------------------------
+  sendBugReport({
+    receiverEmail: project.user.email,
+    projectId: project.id,
+    projectName: project.name,
+    receiverName: project.user.name ?? "there",
+    bugTitle: bug.title,
+    bugDescription: bug.description,
+    severity: bug.severity,
+    screenshotUrl: upload?.url,
+  }).catch(console.error);
 
   const bugWithScreenshots = await prisma.bug.findUnique({
     where: { id: bug.id },
