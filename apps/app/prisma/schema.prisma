@@ -68,7 +68,7 @@ model Waitlist {
 }
 
 model AuditLog {
-  id String @id @default(uuid())
+id String @id @default(dbgenerated("gen_random_uuid()"))
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
