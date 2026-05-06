@@ -15,6 +15,7 @@ model User {
   role     Role   @default(DEV)
   avatar_url String?
   bugs     Bug[]
+  AuditLog AuditLog[]
 }
 
 enum Role {
@@ -42,6 +43,7 @@ model Screenshot {
   url      String
   bugId    String
   bug      Bug @relation(fields: [bugId], references: [id], onDelete: Cascade)
+  public_id String
 }
 
 
@@ -65,3 +67,25 @@ model Waitlist {
   createdAt         DateTime @default(now())
 }
 
+model AuditLog {
+  id String @id @default(uuid())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  action String
+
+  entityType String
+  entityId   String
+
+  metadata Json?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([action])
+}
