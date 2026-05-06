@@ -4,6 +4,7 @@ import { getUserFromRequest } from '@/lib/auth';
 import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
+import { logAudit } from '@/lib/audit';
 
 export async function GET(req: NextRequest) {
 
@@ -73,12 +74,30 @@ export async function POST(req: NextRequest) {
     include: { bugs: true },
   });
 
-  // Notify admin about the new project
-  sendAdminNotification({
-    subject: `New Project Submitted: ${project.name}`,
-    message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
-    link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
-  }).catch(console.error);
+await logAudit({
+  userId: dbUser.id,
+  action: "PROJECT_CREATED",
+  entityType: "project",
+  entityId: project.id,
+  metadata: {
+    snapshot: {
+      name: project.name,
+      url: project.url,
+      slug: project.slug,
+      description: project.description,
+      bugCount: project.bugs?.length || 0,
+    },
+    createdByRole: dbUser.role,
+  },
+  req,
+});
+
+  // // Notify admin about the new project
+  // sendAdminNotification({
+  //   subject: `New Project Submitted: ${project.name}`,
+  //   message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
+  //   link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
+  // }).catch(console.error);
 
   return NextResponse.json(project, { status: 201 });
 }

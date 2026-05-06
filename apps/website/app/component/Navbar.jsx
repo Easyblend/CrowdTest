@@ -62,14 +62,6 @@ export default function Navbar() {
                 <div className="flex items-center gap-3">
                     <ThemeToggle />
 
-                    {/* Sign up CTA */}
-                    <Link
-                        href="https://app.crowdtest.dev/signup"
-                        className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition"
-                    >
-                        Sign up
-                    </Link>
-
                     {/* Mobile toggle */}
                     <button
                         onClick={() => setOpenMobileMenu((prev) => !prev)}

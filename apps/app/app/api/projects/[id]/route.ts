@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
+import { logAudit } from '@/lib/audit';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -84,8 +85,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   })
 
   if (!dbUser) {
-  return NextResponse.json({ error: "User not found" }, { status: 404 });
-}
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
 
   const whereClause = dbUser.role === 'ADMIN' ?
     { id: projectId } :
@@ -128,15 +129,37 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const whereClause = dbUser.role === 'ADMIN' ?
-    { id: projectId } :
-    { id: projectId, createdBy: dbUser.id };
+  const whereClause = dbUser.role === 'ADMIN'
+    ? { id: projectId }
+    : { id: projectId, createdBy: dbUser.id };
+
+  const project = await prisma.project.findFirst({
+    where: whereClause,
+    include: { bugs: true },
+  });
 
   const deleted = await prisma.project.deleteMany({
     where: whereClause,
   });
 
   if (deleted.count === 0) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
+
+  await logAudit({
+    userId: dbUser.id,
+    action: "PROJECT_DELETED",
+    entityType: "project",
+    entityId: projectId,
+    metadata: {
+      snapshot: {
+        name: project?.name,
+        url: project?.url,
+        slug: project?.slug,
+        bugCount: project?.bugs.length,
+      },
+      deletedByRole: dbUser.role,
+      isAdminDelete: dbUser.role === "ADMIN",
+    }
+  });
 
   return NextResponse.json({ success: true });
 }

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 interface BugReportModalProps {
     onClose: () => void;
-    onSubmit: (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: BlobPart) => Promise<void>;
+    onSubmit: (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: File) => Promise<String | void>;
 }
 
 export default function BugReportModal({ onClose, onSubmit }: BugReportModalProps) {
@@ -16,15 +16,29 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
     const [bugImage, setBugImage] = useState<File | null>(null);
 
     const handleSubmit = async () => {
-        if (!title) return; // title is required
-        if (!description) toast("No description provided. It's recommended to add details.", { icon: '⚠️' });
+        if (!title) return;
+
+        if (!description) {
+            toast("No description provided. It's recommended to add details.", {
+                icon: "⚠️",
+            });
+        }
+
         setSubmitting(true);
-        await onSubmit(title, description, severity, bugImage || undefined);
-        setSubmitting(false);
-        setTitle('');
-        setDescription('');
-        setSeverity('LOW');
-        setBugImage(null);
+
+        try {
+            await onSubmit(title, description, severity, bugImage || undefined);
+            // only runs on SUCCESS
+            setTitle("");
+            setDescription("");
+            setSeverity("LOW");
+            setBugImage(null);
+        } catch (err) {
+            // parent already showed toast
+            console.error(err);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const severityColors = {
