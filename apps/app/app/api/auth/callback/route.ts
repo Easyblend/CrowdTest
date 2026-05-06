@@ -1,3 +1,4 @@
+import { logAudit } from '@/lib/audit'
 import { prisma } from '@/lib/prisma'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
@@ -48,7 +49,23 @@ export async function GET(req: NextRequest) {
         avatar_url: user.user_metadata?.avatar_url || null,
         role: "DEV",
       },
-    })
+    });
+
+    const dbUser = await prisma.user.findUnique({
+      where: { auth_id: user.id }
+    });
+
+    await logAudit({
+      userId: dbUser?.id,
+      action: "USER_SIGNIN",
+      entityType: "user",
+      entityId: dbUser?.id,
+      metadata: {
+        email: user.email,
+        signInMethod: user.app_metadata?.provider || "unknown",
+      },
+      req,
+    });
   }
 
   return res
