@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/resolved-reminders",
-      "schedule": "0 9 * * 1"
+      "schedule": "* * * * *"
     }
   ]
 }
