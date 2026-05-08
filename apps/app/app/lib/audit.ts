@@ -5,6 +5,9 @@ export async function logAudit({
     ownerId,
     projectId,
 
+    actorSnapshot,
+    ownerSnapshot,   // project owner
+
     action,
     entityType,
     entityId,
@@ -15,7 +18,8 @@ export async function logAudit({
     actorId?: string;
     ownerId?: string;
     projectId?: string;
-
+    actorSnapshot?: any;   // can be user object or null
+    ownerSnapshot?: any;   // can be user object or null
     action: string;
     entityType?: string;
     entityId?: string;
@@ -35,6 +39,8 @@ export async function logAudit({
         ownerId,
         projectId,
 
+        actorSnapshot,
+        ownerSnapshot,   // project owner
         action,
         entityType,
         entityId,

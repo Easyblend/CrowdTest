@@ -31,6 +31,7 @@ function uploadToCloudinary(
   });
 }
 
+/* ---------------- CREATE BUG ---------------- */
 export async function POST(req: NextRequest, { params }: RouteParams) {
   const supabase = await createSupabaseServer();
 
@@ -107,30 +108,46 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   // 🖼 3. SAVE SCREENSHOT
   // -------------------------------
   if (upload) {
-  try {
-    await prisma.screenshot.create({
-      data: {
-        url: upload.url,
-        public_id: upload.public_id,
-        bugId: bug.id,
-      },
-    });
-  } catch (error) {
-    // If saving screenshot fails, delete the uploaded image to avoid orphaned files
-    await cloudinary.uploader.destroy(upload.public_id);
-    // Also delete the created bug since we couldn't save the screenshot
-    await prisma.bug.delete({ where: { id: bug.id } });
-    return NextResponse.json({ error: "Failed to save screenshot" }, { status: 500 });
-  }
+    try {
+      await prisma.screenshot.create({
+        data: {
+          url: upload.url,
+          public_id: upload.public_id,
+          bugId: bug.id,
+        },
+      });
+    } catch (error) {
+      // If saving screenshot fails, delete the uploaded image to avoid orphaned files
+      await cloudinary.uploader.destroy(upload.public_id);
+      // Also delete the created bug since we couldn't save the screenshot
+      await prisma.bug.delete({ where: { id: bug.id } });
+      return NextResponse.json({ error: "Failed to save screenshot" }, { status: 500 });
+    }
   }
 
   // -------------------------------
   // 📊 4. AUDIT
   // -------------------------------
   await logAudit({
-  actorId: dbUser.id,              // 👈 who reported the bug
-  ownerId: project.createdBy,      // 👈 who owns the project (important for notifications)
-  projectId: project.id,           // 👈 grouping context
+  actorId: dbUser.id,
+  actorSnapshot: {
+    id: dbUser.id,
+    name: dbUser.name,
+    email: dbUser.email,
+    role: dbUser.role,
+  },
+
+  ownerId: project.createdBy,
+  ownerSnapshot: project.user
+    ? {
+        id: project.user.id,
+        name: project.user.name,
+        email: project.user.email,
+        role: project.user.role,
+      }
+    : null,
+
+  projectId: project.id,
 
   action: "BUG_CREATED",
   entityType: "bug",

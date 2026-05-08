@@ -56,7 +56,13 @@ export async function GET(req: NextRequest) {
     });
 
     await logAudit({
-      actorId: dbUser?.id,          // 👈 user who signed in
+      actorId: dbUser?.id,  
+      actorSnapshot: {        // 👈 user who signed in
+        id: dbUser?.id,
+        name: dbUser?.name,
+        email: dbUser?.email,
+        role: dbUser?.role,
+      },
       ownerId: dbUser?.id,          // optional: same user owns their account
 
       action: "USER_SIGNIN",

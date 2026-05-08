@@ -77,7 +77,14 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
   const bug = await prisma.bug.findUnique({
     where: { id },
-    include: { project: true },
+    include: {
+      project: {
+        include: {
+          user: true, // 👈 owner already here
+        }
+      },
+      screenshots: true,
+    }
   });
 
   if (!bug)
@@ -108,16 +115,30 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     data: updateData,
   });
 
-await logAudit({
-  actorId: dbUser.id,
-  ownerId: bug.project.createdBy,   // project owner
-  projectId: bug.projectId,
-  action: "BUG_UPDATED",
-  entityType: "bug",
-  entityId: id,
-  metadata: updateData,
-  req,
-});
+  await logAudit({
+    actorId: dbUser.id,
+    ownerId: bug.project.createdBy,   // project owner
+    actorSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
+    ownerSnapshot: bug.project.user
+      ? {
+        id: bug.project.user.id,
+        name: bug.project.user.name,
+        email: bug.project.user.email,
+        role: bug.project.user.role,
+      }
+      : null,
+    projectId: bug.projectId,
+    action: "BUG_UPDATED",
+    entityType: "bug",
+    entityId: id,
+    metadata: updateData,
+    req,
+  });
 
   return NextResponse.json(updated);
 }
@@ -145,7 +166,11 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const bug = await prisma.bug.findUnique({
     where: { id },
     include: {
-      project: true,
+      project: {
+        include: {
+          user: true, // 👈 owner already here
+        }
+      },
       screenshots: true,
     },
   });
@@ -181,17 +206,35 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   });
 
   await logAudit({
-  actorId: dbUser.id,
-  ownerId: bug.project.createdBy,   // project owner
-  projectId: bug.projectId,
-  action: "BUG_DELETED",
-  entityType: "bug",
-  entityId: id,
-  metadata: {
-    screenshotCount: bug.screenshots.length,
-  },
-  req,
-});
+    actorId: dbUser.id,
+    actorSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
+
+    ownerId: bug.project.createdBy,
+    ownerSnapshot: bug.project.user
+      ? {
+        id: bug.project.user.id,
+        name: bug.project.user.name,
+        email: bug.project.user.email,
+        role: bug.project.user.role,
+      }
+      : null,
+    projectId: bug.projectId,
+
+    action: "BUG_DELETED",
+    entityType: "bug",
+    entityId: id,
+
+    metadata: {
+      screenshotCount: bug.screenshots.length,
+    },
+
+    req,
+  });
 
   return NextResponse.json({ message: "Bug deleted successfully" });
 }

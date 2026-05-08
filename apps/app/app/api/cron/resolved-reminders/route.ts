@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendResolvedReminder } from "@/lib/email/sendResolvedReminder";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
-console.log("🔥 CRON ROUTE HIT");
+    console.log("🔥 CRON ROUTE HIT");
     // 🔒 Protect route
     const authHeader = req.headers.get("authorization");
 
@@ -72,6 +73,33 @@ console.log("🔥 CRON ROUTE HIT");
                     id: bug.id,
                     title: bug.title,
                 })),
+            });
+            await logAudit({
+                actorSnapshot: {
+                    type: "system",
+                    name: "CRON_JOB",
+                    job: "RESOLVED_BUG_REMINDER",
+                },
+                actorId: "SYSTEM",
+                projectId: group.bugs[0].projectId,
+                ownerId: group.user.id,
+                ownerSnapshot: {
+                    id: group.user.id,
+                    name: group.user.name,
+                    email: group.user.email,
+                },
+
+                action: "CRON_RESOLVED_REMINDER_SENT",
+                entityType: "system_job",
+                entityId: email,
+
+                metadata: {
+                    bugCount: group.bugs.length,
+                    bugIds: group.bugs.map((b: any) => b.id),
+                    runAt: new Date().toISOString(),
+                },
+
+                req,
             });
         }
 

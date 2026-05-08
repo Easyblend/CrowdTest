@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getUserFromRequest } from '@/lib/auth';
 import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
@@ -37,6 +36,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(projects);
 }
 
+/* ---------------- CREATE PROJECT ---------------- */
 export async function POST(req: NextRequest) {
 
   const supabase = await createSupabaseServer()
@@ -71,31 +71,44 @@ export async function POST(req: NextRequest) {
       description,
       createdBy: dbUser.id,
     },
-    include: { bugs: true },
+    include: { bugs: true, user: true },
   });
 
-await logAudit({
-  actorId: dbUser.id,
-  ownerId: dbUser.id, // creator owns the project
-  projectId: project.id,
-
-  action: "PROJECT_CREATED",
-  entityType: "project",
-  entityId: project.id,
-
-  metadata: {
-    snapshot: {
-      name: project.name,
-      url: project.url,
-      slug: project.slug,
-      description: project.description,
-      bugCount: project.bugs?.length || 0,
+  await logAudit({
+    actorId: dbUser.id,
+    actorSnapshot: {
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+      id: dbUser.id,
     },
-    createdByRole: dbUser.role,
-  },
+    ownerId: dbUser.id,
+    ownerSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
 
-  req,
-});
+    projectId: project.id,
+
+    action: "PROJECT_CREATED",
+    entityType: "project",
+    entityId: project.id,
+
+    metadata: {
+      snapshot: {
+        name: project.name,
+        url: project.url,
+        slug: project.slug,
+        description: project.description,
+        bugCount: project.bugs?.length || 0,
+      },
+      createdByRole: dbUser.role,
+    },
+
+    req,
+  });
   // // Notify admin about the new project
   sendAdminNotification({
     subject: `New Project Submitted: ${project.name}`,

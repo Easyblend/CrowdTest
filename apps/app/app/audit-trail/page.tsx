@@ -17,6 +17,23 @@ type AuditLog = {
 
   metadata: any;
   createdAt: string;
+
+  actorSnapshot?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    role?: string;
+  } | null;
+
+  ownerSnapshot?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    role?: string;
+  } | null;
+
+  actorDisplay?: string;
+  ownerDisplay?: string;
 };
 
 export default function AuditPage() {
@@ -35,7 +52,7 @@ export default function AuditPage() {
 
         const data = await res.json();
         setLogs(data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load activity");
       } finally {
         setLoading(false);
@@ -45,14 +62,13 @@ export default function AuditPage() {
     fetchLogs();
   }, []);
 
-  console.log(logs[0]);
-
   if (loading) return <FullScreenLoader />;
 
   return (
     <main className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
       <div className="p-6 md:p-8 max-w-6xl mx-auto">
-        {/* Header */}
+
+        {/* HEADER */}
         <div className="mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900">
             Activity Log
@@ -62,26 +78,31 @@ export default function AuditPage() {
           </p>
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
-          <div className="border-b border-slate-700 px-5 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
+          {/* HEADER BAR */}
+          <div className="border-b border-slate-700 px-5 py-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-slate-100 text-sm font-semibold">
                 Activity history
               </p>
               <p className="text-slate-400 text-xs">
-                Showing {logs.length} item{logs.length === 1 ? "" : "s"}.
+                Showing {logs.length} item{logs.length === 1 ? "" : "s"}
               </p>
             </div>
             <p className="text-slate-400 text-xs">
-              Click any row to view details.
+              Click a row to view details
             </p>
           </div>
 
+          {/* TABLE */}
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-sm border-separate border-spacing-y-2">
+
               <thead className="bg-slate-700 text-slate-200">
                 <tr>
+                  <th className="text-left p-4 font-semibold">Actor</th>
                   <th className="text-left p-4 font-semibold">Action</th>
                   <th className="text-left p-4 font-semibold">Entity</th>
                   <th className="text-left p-4 font-semibold">Time</th>
@@ -93,16 +114,34 @@ export default function AuditPage() {
                 {logs.map((log) => {
                   const isOpen = openRow === log.id;
 
+                  const actorName =
+                    log.actorSnapshot?.name ||
+                    log.actorSnapshot?.email ||
+                    log.actorId ||
+                    "Unknown";
+
+                  const ownerName =
+                    log.ownerSnapshot?.name ||
+                    log.ownerSnapshot?.email ||
+                    log.ownerId ||
+                    "Unknown";
+
                   return (
                     <Fragment key={log.id}>
+
                       {/* MAIN ROW */}
                       <tr
-                        onClick={() =>
-                          setOpenRow(isOpen ? null : log.id)
-                        }
-                        className={`border border-slate-700 transition hover:bg-slate-700/60 cursor-pointer ${isOpen ? "bg-slate-700" : "bg-slate-800"
-                          }`}
+                        onClick={() => setOpenRow(isOpen ? null : log.id)}
+                        className={`cursor-pointer transition border border-slate-700 hover:bg-slate-700/60 ${
+                          isOpen ? "bg-slate-700" : "bg-slate-800"
+                        }`}
                       >
+
+                        {/* ACTOR */}
+                        <td className="p-4 text-slate-100 font-medium">
+                          {actorName}
+                        </td>
+
                         {/* ACTION */}
                         <td className="p-4">
                           <ActionBadge action={log.action} />
@@ -112,10 +151,10 @@ export default function AuditPage() {
                         <td className="p-4">
                           <div className="flex flex-col">
                             <span className="text-slate-100 font-medium">
-                              {log.metadata?.snapshot?.name || log.entityId}
+                              {log.entityType}
                             </span>
                             <span className="text-xs text-slate-400">
-                              {log.entityType}
+                              {log.entityId.slice(0, 8)}...
                             </span>
                           </div>
                         </td>
@@ -125,36 +164,34 @@ export default function AuditPage() {
                           {formatTime(log.createdAt)}
                         </td>
 
-                        {/* INDICATOR */}
+                        {/* ARROW */}
                         <td className="p-4 text-right text-slate-400">
-                          <span
-                            className={`inline-block transition ${isOpen ? "rotate-180" : ""
-                              }`}
-                          >
+                          <span className={`inline-block transition ${isOpen ? "rotate-180" : ""}`}>
                             ▼
                           </span>
                         </td>
                       </tr>
 
-                      {/* DROPDOWN */}
+                      {/* DETAILS */}
                       {isOpen && (
                         <tr className="bg-slate-900">
                           <td colSpan={5} className="p-5">
+
                             <div className="grid grid-cols-2 gap-4 text-xs text-slate-300">
 
                               <div>
-                                <p className="text-slate-500">Actor ID</p>
-                                <p>{log.actorId}</p>
+                                <p className="text-slate-500">Actor</p>
+                                <p>{actorName}</p>
                               </div>
 
                               <div>
-                                <p className="text-slate-500">Owner ID</p>
-                                <p>{log.ownerId}</p>
+                                <p className="text-slate-500">Owner</p>
+                                <p>{ownerName}</p>
                               </div>
 
                               <div>
                                 <p className="text-slate-500">Project ID</p>
-                                <p>{log.projectId}</p>
+                                <p>{log.projectId || "-"}</p>
                               </div>
 
                               <div>
@@ -162,17 +199,19 @@ export default function AuditPage() {
                                 <p>{log.entityType}:{log.entityId}</p>
                               </div>
 
+                              <div className="col-span-2">
+                                <p className="text-slate-500 mb-1">Metadata</p>
+                                <pre className="text-xs bg-slate-800 p-3 rounded-lg overflow-x-auto">
+                                  {JSON.stringify(log.metadata, null, 2)}
+                                </pre>
+                              </div>
+
                             </div>
 
-                            {/* metadata */}
-                            <div className="mt-4 bg-slate-800 border border-slate-600 rounded-lg p-3">
-                              <pre className="text-xs overflow-x-auto">
-                                {JSON.stringify(log.metadata, null, 2)}
-                              </pre>
-                            </div>
                           </td>
                         </tr>
                       )}
+
                     </Fragment>
                   );
                 })}
@@ -180,7 +219,7 @@ export default function AuditPage() {
             </table>
           </div>
 
-          {/* Empty state */}
+          {/* EMPTY STATE */}
           {logs.length === 0 && (
             <div className="p-10 text-center text-slate-400">
               <div className="text-4xl mb-2">📭</div>
@@ -200,20 +239,17 @@ function ActionBadge({ action }: { action: string }) {
     PROJECT_CREATED: "bg-green-500/20 text-green-400",
     PROJECT_DELETED: "bg-red-500/20 text-red-400",
     USER_SIGNIN: "bg-blue-500/20 text-blue-400",
-  };
-
-  const labels: Record<string, string> = {
-    PROJECT_CREATED: "Created",
-    PROJECT_DELETED: "Deleted",
-    USER_SIGNIN: "Login",
+    BUG_UPDATED: "bg-yellow-500/20 text-yellow-300",
+    BUG_DELETED: "bg-red-500/20 text-red-400",
   };
 
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[action] || "bg-slate-600 text-slate-300"
-        }`}
+      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+        styles[action] || "bg-slate-600 text-slate-300"
+      }`}
     >
-      {labels[action] || action}
+      {action}
     </span>
   );
 }

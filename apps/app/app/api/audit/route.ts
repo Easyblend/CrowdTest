@@ -34,5 +34,36 @@ const logs = await prisma.auditLog.findMany({
   take: 50,
 });
 
-  return NextResponse.json(logs);
+const enriched = logs.map((log) => ({
+  id: log.id,
+
+  actorId: log.actorId,
+  actorSnapshot: log.actorSnapshot,
+
+  ownerId: log.ownerId,
+  ownerSnapshot: log.ownerSnapshot,
+
+  projectId: log.projectId,
+
+  action: log.action,
+  entityType: log.entityType,
+  entityId: log.entityId,
+  metadata: log.metadata,
+
+  ipAddress: log.ipAddress,
+  userAgent: log.userAgent,
+
+  createdAt: log.createdAt.toISOString(), // 🔥 important fix
+
+  actorDisplay:
+    (log.actorSnapshot as any)?.name ||
+    (log.actorSnapshot as any)?.email ||
+    log.actorId,
+
+  ownerDisplay:
+    (log.ownerSnapshot as any)?.name ||
+    log.ownerId,
+}));
+
+return NextResponse.json(enriched);
 }

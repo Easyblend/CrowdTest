@@ -13,7 +13,6 @@ model User {
   email      String     @unique
   role       Role       @default(DEV)
   avatar_url String?
-  AuditLog   AuditLog[]
   bugs       Bug[]
   projects   Project[]
 }
@@ -71,10 +70,10 @@ model Waitlist {
 model AuditLog {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
 
-  userId     String?  // legacy (optional keep for backward compatibility)
-
   actorId    String?  // 👈 who performed action (recommended primary identity)
+  actorSnapshot Json?
   ownerId    String?  // 👈 who owns the resource / should see it
+  ownerSnapshot Json?
   projectId  String?  // 👈 grouping context
 
   action     String
@@ -84,10 +83,8 @@ model AuditLog {
   ipAddress  String?
   userAgent  String?
   createdAt  DateTime @default(now())
-  user       User?    @relation(fields: [userId], references: [id])
 
   @@index([entityType, entityId])
-  @@index([userId])
   @@index([actorId])
   @@index([ownerId])
   @@index([projectId])
