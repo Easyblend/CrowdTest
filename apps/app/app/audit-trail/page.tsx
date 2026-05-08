@@ -6,9 +6,15 @@ import toast from "react-hot-toast";
 
 type AuditLog = {
   id: string;
+
+  actorId: string | null;
+  ownerId: string | null;
+  projectId: string | null;
+
   action: string;
   entityType: string;
   entityId: string;
+
   metadata: any;
   createdAt: string;
 };
@@ -38,6 +44,8 @@ export default function AuditPage() {
 
     fetchLogs();
   }, []);
+
+  console.log(logs[0]);
 
   if (loading) return <FullScreenLoader />;
 
@@ -92,9 +100,8 @@ export default function AuditPage() {
                         onClick={() =>
                           setOpenRow(isOpen ? null : log.id)
                         }
-                        className={`border border-slate-700 transition hover:bg-slate-700/60 cursor-pointer ${
-                          isOpen ? "bg-slate-700" : "bg-slate-800"
-                        }`}
+                        className={`border border-slate-700 transition hover:bg-slate-700/60 cursor-pointer ${isOpen ? "bg-slate-700" : "bg-slate-800"
+                          }`}
                       >
                         {/* ACTION */}
                         <td className="p-4">
@@ -121,9 +128,8 @@ export default function AuditPage() {
                         {/* INDICATOR */}
                         <td className="p-4 text-right text-slate-400">
                           <span
-                            className={`inline-block transition ${
-                              isOpen ? "rotate-180" : ""
-                            }`}
+                            className={`inline-block transition ${isOpen ? "rotate-180" : ""
+                              }`}
                           >
                             ▼
                           </span>
@@ -133,13 +139,34 @@ export default function AuditPage() {
                       {/* DROPDOWN */}
                       {isOpen && (
                         <tr className="bg-slate-900">
-                          <td
-                            colSpan={4}
-                            className="p-5"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <div className="bg-slate-800 border border-slate-600 rounded-xl p-4 text-xs font-mono text-slate-300 overflow-x-auto">
-                              <pre className="whitespace-pre-wrap">
+                          <td colSpan={5} className="p-5">
+                            <div className="grid grid-cols-2 gap-4 text-xs text-slate-300">
+
+                              <div>
+                                <p className="text-slate-500">Actor ID</p>
+                                <p>{log.actorId}</p>
+                              </div>
+
+                              <div>
+                                <p className="text-slate-500">Owner ID</p>
+                                <p>{log.ownerId}</p>
+                              </div>
+
+                              <div>
+                                <p className="text-slate-500">Project ID</p>
+                                <p>{log.projectId}</p>
+                              </div>
+
+                              <div>
+                                <p className="text-slate-500">Entity</p>
+                                <p>{log.entityType}:{log.entityId}</p>
+                              </div>
+
+                            </div>
+
+                            {/* metadata */}
+                            <div className="mt-4 bg-slate-800 border border-slate-600 rounded-lg p-3">
+                              <pre className="text-xs overflow-x-auto">
                                 {JSON.stringify(log.metadata, null, 2)}
                               </pre>
                             </div>
@@ -183,9 +210,8 @@ function ActionBadge({ action }: { action: string }) {
 
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-        styles[action] || "bg-slate-600 text-slate-300"
-      }`}
+      className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[action] || "bg-slate-600 text-slate-300"
+        }`}
     >
       {labels[action] || action}
     </span>

@@ -145,21 +145,24 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   if (deleted.count === 0) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
 
   await logAudit({
-    userId: dbUser.id,
-    action: "PROJECT_DELETED",
-    entityType: "project",
-    entityId: projectId,
-    metadata: {
-      snapshot: {
-        name: project?.name,
-        url: project?.url,
-        slug: project?.slug,
-        bugCount: project?.bugs.length,
-      },
-      deletedByRole: dbUser.role,
-      isAdminDelete: dbUser.role === "ADMIN",
-    }
-  });
+  actorId: dbUser.id,
+  ownerId: project?.createdBy, // 👈 IMPORTANT FIX
+  projectId: projectId,
+  action: "PROJECT_DELETED",
+  entityType: "project",
+  entityId: projectId,
+  metadata: {
+    snapshot: {
+      name: project?.name,
+      url: project?.url,
+      slug: project?.slug,
+      bugCount: project?.bugs.length,
+    },
+    deletedByRole: dbUser.role,
+    isAdminDelete: dbUser.role === "ADMIN",
+  },
+  req,
+});
 
   return NextResponse.json({ success: true });
 }

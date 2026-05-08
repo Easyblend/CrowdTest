@@ -1,34 +1,44 @@
 import { supabase } from "./supabaseClient";
 
 export async function logAudit({
-    userId,
+    actorId,
+    ownerId,
+    projectId,
+
     action,
     entityType,
     entityId,
+
     metadata = {},
-    req, // Optional: Pass the request object to capture IP and user agent
+    req,
 }: {
-    userId?: string;
+    actorId?: string;
+    ownerId?: string;
+    projectId?: string;
+
     action: string;
     entityType?: string;
     entityId?: string;
     metadata?: any;
     req?: any;
 }) {
-
     const ipAddress =
-        req?.headers.get("x-forwarded-for")?.split(",")[0] ||
-        req?.headers.get("x-real-ip") ||
+        req?.headers?.get("x-forwarded-for")?.split(",")[0] ||
+        req?.headers?.get("x-real-ip") ||
         "unknown";
 
     const userAgent =
-        req?.headers.get("user-agent") || "unknown";
+        req?.headers?.get("user-agent") || "unknown";
 
     const { error } = await supabase.from("AuditLog").insert({
-        userId,
+        actorId,
+        ownerId,
+        projectId,
+
         action,
         entityType,
         entityId,
+
         metadata,
         ipAddress,
         userAgent,

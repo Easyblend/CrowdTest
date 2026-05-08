@@ -108,14 +108,16 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     data: updateData,
   });
 
-  await logAudit({
-    userId: dbUser.id,
-    action: "BUG_UPDATED",
-    entityType: "bug",
-    entityId: id,
-    metadata: updateData,
-    req,
-  });
+await logAudit({
+  actorId: dbUser.id,
+  ownerId: bug.project.createdBy,   // project owner
+  projectId: bug.projectId,
+  action: "BUG_UPDATED",
+  entityType: "bug",
+  entityId: id,
+  metadata: updateData,
+  req,
+});
 
   return NextResponse.json(updated);
 }
@@ -179,15 +181,17 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   });
 
   await logAudit({
-    userId: dbUser.id,
-    action: "BUG_DELETED",
-    entityType: "bug",
-    entityId: id,
-    metadata: {
-      screenshotCount: bug.screenshots.length,
-    },
-    req,
-  });
+  actorId: dbUser.id,
+  ownerId: bug.project.createdBy,   // project owner
+  projectId: bug.projectId,
+  action: "BUG_DELETED",
+  entityType: "bug",
+  entityId: id,
+  metadata: {
+    screenshotCount: bug.screenshots.length,
+  },
+  req,
+});
 
   return NextResponse.json({ message: "Bug deleted successfully" });
 }

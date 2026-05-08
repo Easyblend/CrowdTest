@@ -70,7 +70,13 @@ model Waitlist {
 
 model AuditLog {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  userId     String?
+
+  userId     String?  // legacy (optional keep for backward compatibility)
+
+  actorId    String?  // 👈 who performed action (recommended primary identity)
+  ownerId    String?  // 👈 who owns the resource / should see it
+  projectId  String?  // 👈 grouping context
+
   action     String
   entityType String
   entityId   String
@@ -82,6 +88,9 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([userId])
+  @@index([actorId])
+  @@index([ownerId])
+  @@index([projectId])
   @@index([action])
 }
 

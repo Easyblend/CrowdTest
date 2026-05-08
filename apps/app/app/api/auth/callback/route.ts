@@ -56,14 +56,19 @@ export async function GET(req: NextRequest) {
     });
 
     await logAudit({
-      userId: dbUser?.id,
+      actorId: dbUser?.id,          // 👈 user who signed in
+      ownerId: dbUser?.id,          // optional: same user owns their account
+
       action: "USER_SIGNIN",
       entityType: "user",
       entityId: dbUser?.id,
+
       metadata: {
         email: user.email,
         signInMethod: user.app_metadata?.provider || "unknown",
+        provider: user.app_metadata?.provider,
       },
+
       req,
     });
   }

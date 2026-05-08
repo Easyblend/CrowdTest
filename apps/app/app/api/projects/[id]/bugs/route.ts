@@ -128,18 +128,27 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   // 📊 4. AUDIT
   // -------------------------------
   await logAudit({
-    userId: dbUser.id,
-    action: "BUG_CREATED",
-    entityType: "bug",
-    entityId: bug.id,
-    metadata: {
-      title,
-      severity,
-      projectId,
-      screenshot: upload?.url,
+  actorId: dbUser.id,              // 👈 who reported the bug
+  ownerId: project.createdBy,      // 👈 who owns the project (important for notifications)
+  projectId: project.id,           // 👈 grouping context
+
+  action: "BUG_CREATED",
+  entityType: "bug",
+  entityId: bug.id,
+
+  metadata: {
+    title,
+    severity,
+    description,
+    project: {
+      id: project.id,
+      name: project.name,
     },
-    req,
-  });
+    screenshot: upload?.url ?? null,
+  },
+
+  req,
+});
 
   // -------------------------------
   // 📧 5. EMAIL

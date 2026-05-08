@@ -75,10 +75,14 @@ export async function POST(req: NextRequest) {
   });
 
 await logAudit({
-  userId: dbUser.id,
+  actorId: dbUser.id,
+  ownerId: dbUser.id, // creator owns the project
+  projectId: project.id,
+
   action: "PROJECT_CREATED",
   entityType: "project",
   entityId: project.id,
+
   metadata: {
     snapshot: {
       name: project.name,
@@ -89,15 +93,15 @@ await logAudit({
     },
     createdByRole: dbUser.role,
   },
+
   req,
 });
-
   // // Notify admin about the new project
-  // sendAdminNotification({
-  //   subject: `New Project Submitted: ${project.name}`,
-  //   message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
-  //   link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
-  // }).catch(console.error);
+  sendAdminNotification({
+    subject: `New Project Submitted: ${project.name}`,
+    message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
+    link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
+  }).catch(console.error);
 
   return NextResponse.json(project, { status: 201 });
 }

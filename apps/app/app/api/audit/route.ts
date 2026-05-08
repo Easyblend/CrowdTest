@@ -21,13 +21,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const logs = await prisma.auditLog.findMany({
-    where: dbUser.role === "ADMIN"
-      ? {}
-      : { userId: dbUser.id },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+const logs = await prisma.auditLog.findMany({
+  where: dbUser.role === "ADMIN"
+    ? {}
+    : {
+        OR: [
+          { actorId: dbUser.id },
+          { ownerId: dbUser.id },
+        ],
+      },
+  orderBy: { createdAt: "desc" },
+  take: 50,
+});
 
   return NextResponse.json(logs);
 }
