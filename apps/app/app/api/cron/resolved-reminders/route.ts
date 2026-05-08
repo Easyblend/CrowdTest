@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { sendResolvedReminder } from "@/lib/email/sendResolvedReminder";
 
 export async function GET(req: NextRequest) {
-
+console.log("🔥 CRON ROUTE HIT");
     // 🔒 Protect route
     const authHeader = req.headers.get("authorization");
 
