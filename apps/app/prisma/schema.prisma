@@ -7,21 +7,14 @@ datasource db {
 }
 
 model User {
-  id         String     @id @default(uuid())
-  auth_id    String     @unique
+  id         String    @id @default(uuid())
+  auth_id    String    @unique
   name       String
-  email      String     @unique
-  role       Role       @default(DEV)
+  email      String    @unique
+  role       Role      @default(DEV)
   avatar_url String?
   bugs       Bug[]
   projects   Project[]
-}
-
-enum BugStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
 }
 
 model Bug {
@@ -68,27 +61,32 @@ model Waitlist {
 }
 
 model AuditLog {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-
-  actorId    String?  // 👈 who performed action (recommended primary identity)
+  id            String   @id @default(dbgenerated("gen_random_uuid()"))
+  action        String
+  entityType    String
+  entityId      String
+  metadata      Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+  actorId       String?
+  ownerId       String?
+  projectId     String?
   actorSnapshot Json?
-  ownerId    String?  // 👈 who owns the resource / should see it
   ownerSnapshot Json?
-  projectId  String?  // 👈 grouping context
-
-  action     String
-  entityType String
-  entityId   String
-  metadata   Json?
-  ipAddress  String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
 
   @@index([entityType, entityId])
   @@index([actorId])
   @@index([ownerId])
   @@index([projectId])
   @@index([action])
+}
+
+enum BugStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
 }
 
 enum Role {
