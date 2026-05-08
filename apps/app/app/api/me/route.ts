@@ -12,21 +12,38 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
 
-  const dbUser = await prisma.user.upsert({
-    where: { auth_id: user.id },
-    update: {
-      email: user.email!,
-      name: user.user_metadata?.name || "Unnamed User",
-      avatar_url: user.user_metadata?.avatar_url || null,
-    },
-    create: {
+  const existingUser = await prisma.user.findFirst({
+  where: {
+    OR: [
+      { auth_id: user.id },
+      { email: user.email! }
+    ]
+  }
+})
+
+let dbUser
+
+if (existingUser) {
+  dbUser = await prisma.user.update({
+    where: { id: existingUser.id },
+    data: {
       auth_id: user.id,
       email: user.email!,
-      name: user.user_metadata?.name || "Unnamed User",
+      name: user.user_metadata?.name ?? existingUser.name,
+      avatar_url: user.user_metadata?.avatar_url ?? existingUser.avatar_url,
+    }
+  })
+} else {
+  dbUser = await prisma.user.create({
+    data: {
+      auth_id: user.id,
+      email: user.email!,
+      name: user.user_metadata?.name || 'Unnamed User',
       avatar_url: user.user_metadata?.avatar_url || null,
-      role: "DEV",
-    },
-  });
+      role: 'DEV',
+    }
+  })
+}
   
   return NextResponse.json(dbUser)
 }
