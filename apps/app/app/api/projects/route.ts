@@ -59,9 +59,17 @@ export async function POST(req: NextRequest) {
     where: { auth_id: user.id }
   })
 
-  if (!dbUser) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+
+if (!dbUser) {
+  dbUser = await prisma.user.create({
+    data: {
+      auth_id: user.id,
+      email: user.email!,
+      name: user.user_metadata?.name || "Unnamed User",
+      role: "DEV",
+    }
+  })
+}
 
   const project = await prisma.project.create({
     data: {
