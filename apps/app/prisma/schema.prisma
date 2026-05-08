@@ -7,85 +7,92 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(uuid())
-  auth_id  String @unique
-  name     String
-  email    String @unique
-  projects Project[]
-  role     Role   @default(DEV)
+  id         String     @id @default(uuid())
+  auth_id    String     @unique
+  name       String
+  email      String     @unique
+  role       Role       @default(DEV)
   avatar_url String?
-  bugs     Bug[]
-  AuditLog AuditLog[]
+  bugs       Bug[]
+  projects   Project[]
+}
+
+enum BugStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model Bug {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  severity    String
+  createdAt   DateTime     @default(now())
+  projectId   String
+  createdBy   String
+  resolved    Boolean      @default(false)
+  status      BugStatus    @default(OPEN)
+  user        User         @relation(fields: [createdBy], references: [id])
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  screenshots Screenshot[]
+}
+
+model Screenshot {
+  id        String @id @default(uuid())
+  url       String
+  bugId     String
+  public_id String
+  bug       Bug    @relation(fields: [bugId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  url         String
+  slug        String   @unique
+  description String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+  bugs        Bug[]
+  user        User     @relation(fields: [createdBy], references: [id])
+}
+
+model Waitlist {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  confirmed         Boolean  @default(false)
+  confirmationToken String?
+  createdAt         DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+
+  actorId    String?  // 👈 who performed action (recommended primary identity)
+  actorSnapshot Json?
+  ownerId    String?  // 👈 who owns the resource / should see it
+  ownerSnapshot Json?
+  projectId  String?  // 👈 grouping context
+
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([ownerId])
+  @@index([projectId])
+  @@index([action])
 }
 
 enum Role {
   DEV
   TESTER
   ADMIN
-}
-
-model Bug {
-  id          String    @id @default(uuid())
-  title       String
-  description String
-  severity    String
-  createdAt   DateTime @default(now())
-  projectId   String
-  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy   String
-  user        User    @relation(fields: [createdBy], references: [id])
-  resolved     Boolean  @default(false)
-  screenshots Screenshot[]
-}
-
-model Screenshot {
-  id       String    @id @default(uuid())
-  url      String
-  bugId    String
-  bug      Bug @relation(fields: [bugId], references: [id], onDelete: Cascade)
-  public_id String
-}
-
-
-model Project {
-  id          String    @id @default(uuid())
-  name        String
-  url         String
-  slug        String    @unique
-  description String?
-  createdBy   String
-  user        User      @relation(fields: [createdBy], references: [id])
-  bugs        Bug[]
-  createdAt   DateTime  @default(now())
-}
-
-model Waitlist {
-  id                String    @id @default(uuid())
-  email             String   @unique
-  confirmed         Boolean  @default(false)
-  confirmationToken String?  
-  createdAt         DateTime @default(now())
-}
-
-model AuditLog {
-  id String @id @default(uuid())
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  action String
-
-  entityType String
-  entityId   String
-
-  metadata Json?
-
-  ipAddress String?
-  userAgent String?
-
-  createdAt DateTime @default(now())
-
-  @@index([entityType, entityId])
-  @@index([userId])
-  @@index([action])
 }

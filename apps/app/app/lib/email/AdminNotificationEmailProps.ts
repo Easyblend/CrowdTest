@@ -12,7 +12,7 @@ export async function sendAdminNotification({
   link,
 }: AdminNotificationEmailProps) {
   await transporter.sendMail({
-    from: `"CrowdTest" <hello@crowdtest.dev>`,
+    from: `"CrowdTest" <${process.env.EMAIL_SENDER}>`,
     to: process.env.ADMIN_EMAIL, // Set your admin email in env
     subject: `[ADMIN] ${subject}`,
     html: buildAdminEmailHtml({ subject, message, link }),

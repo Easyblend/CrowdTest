@@ -49,7 +49,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   if (!canView)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  return NextResponse.json(bug);
+  return NextResponse.json({
+    ...bug,
+    status: bug.status ?? "OPEN",
+  });
 }
 
 /* ---------------- UPDATE BUG ---------------- */
@@ -74,7 +77,14 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 
   const bug = await prisma.bug.findUnique({
     where: { id },
-    include: { project: true },
+    include: {
+      project: {
+        include: {
+          user: true, // 👈 owner already here
+        }
+      },
+      screenshots: true,
+    }
   });
 
   if (!bug)
@@ -94,7 +104,11 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   if (body.title !== undefined) updateData.title = body.title;
   if (body.description !== undefined) updateData.description = body.description;
   if (body.severity !== undefined) updateData.severity = body.severity;
-  if (body.resolved !== undefined) updateData.resolved = body.resolved;
+
+  // ✅ NEW: status handling
+  if (body.status !== undefined) {
+    updateData.status = body.status; // should be validated against BugStatus enum
+  }
 
   const updated = await prisma.bug.update({
     where: { id },
@@ -102,7 +116,23 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   });
 
   await logAudit({
-    userId: dbUser.id,
+    actorId: dbUser.id,
+    ownerId: bug.project.createdBy,   // project owner
+    actorSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
+    ownerSnapshot: bug.project.user
+      ? {
+        id: bug.project.user.id,
+        name: bug.project.user.name,
+        email: bug.project.user.email,
+        role: bug.project.user.role,
+      }
+      : null,
+    projectId: bug.projectId,
     action: "BUG_UPDATED",
     entityType: "bug",
     entityId: id,
@@ -136,7 +166,11 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const bug = await prisma.bug.findUnique({
     where: { id },
     include: {
-      project: true,
+      project: {
+        include: {
+          user: true, // 👈 owner already here
+        }
+      },
       screenshots: true,
     },
   });
@@ -172,13 +206,33 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   });
 
   await logAudit({
-    userId: dbUser.id,
+    actorId: dbUser.id,
+    actorSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
+
+    ownerId: bug.project.createdBy,
+    ownerSnapshot: bug.project.user
+      ? {
+        id: bug.project.user.id,
+        name: bug.project.user.name,
+        email: bug.project.user.email,
+        role: bug.project.user.role,
+      }
+      : null,
+    projectId: bug.projectId,
+
     action: "BUG_DELETED",
     entityType: "bug",
     entityId: id,
+
     metadata: {
       screenshotCount: bug.screenshots.length,
     },
+
     req,
   });
 

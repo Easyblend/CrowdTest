@@ -35,35 +35,59 @@ export async function GET(req: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (user) {
-    await prisma.user.upsert({
+    let dbUser = await prisma.user.findUnique({
       where: { auth_id: user.id },
-      update: {
-        email: user.email!,
-        name: user.user_metadata?.name || "Unnamed User",
-        avatar_url: user.user_metadata?.avatar_url || null,
-      },
-      create: {
-        auth_id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || "Unnamed User",
-        avatar_url: user.user_metadata?.avatar_url || null,
-        role: "DEV",
-      },
     });
 
-    const dbUser = await prisma.user.findUnique({
-      where: { auth_id: user.id }
-    });
+    if (!dbUser) {
+      const existingByEmail = await prisma.user.findUnique({
+        where: { email: user.email! },
+      });
+
+      if (existingByEmail) {
+        dbUser = await prisma.user.update({
+          where: { email: user.email! },
+          data: {
+            auth_id: user.id,
+            name: user.user_metadata?.name || existingByEmail.name,
+            avatar_url:
+              user.user_metadata?.avatar_url ||
+              existingByEmail.avatar_url,
+          },
+        });
+      } else {
+        dbUser = await prisma.user.create({
+          data: {
+            auth_id: user.id,
+            email: user.email!,
+            name: user.user_metadata?.name || "Unnamed User",
+            avatar_url: user.user_metadata?.avatar_url || null,
+            role: "DEV",
+          },
+        });
+      }
+    }
 
     await logAudit({
-      userId: dbUser?.id,
+      actorId: dbUser?.id,
+      actorSnapshot: {        // 👈 user who signed in
+        id: dbUser?.id,
+        name: dbUser?.name,
+        email: dbUser?.email,
+        role: dbUser?.role,
+      },
+      ownerId: dbUser?.id,          // optional: same user owns their account
+
       action: "USER_SIGNIN",
       entityType: "user",
       entityId: dbUser?.id,
+
       metadata: {
         email: user.email,
         signInMethod: user.app_metadata?.provider || "unknown",
+        provider: user.app_metadata?.provider,
       },
+
       req,
     });
   }

@@ -53,7 +53,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
   return NextResponse.json(project);
 }
-
+/* ---------------- UPDATE PROJECT ---------------- */
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const supabase = await createSupabaseServer()
@@ -72,13 +72,14 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const data = await req.json();
 
-  let updatedData = {
-    ...data
-  };
+  const updatedData: any = {};
 
-  if (data.name) {
+  if (data.name !== undefined) {
+    updatedData.name = data.name;
     updatedData.slug = slugify(data.name, { lower: true, strict: true });
   }
+  if (data.description !== undefined) updatedData.description = data.description;
+  if (data.url !== undefined) updatedData.url = data.url;
 
   let dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
@@ -92,15 +93,40 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     { id: projectId } :
     { id: projectId, createdBy: dbUser.id };
 
-  const updated = await prisma.project.update({
+  const updatedProject = await prisma.project.update({
     where: whereClause,
     data: updatedData,
+    include: { user: true },
   });
 
-  if (!updated) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
+  if (!updatedProject) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
 
-  const updatedProject = await prisma.project.findUnique({
-    where: { id: projectId },
+
+  await logAudit({
+    actorId: dbUser.id,
+    actorSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
+    ownerSnapshot: updatedProject.user
+      ? {
+        id: updatedProject.user.id,
+        name: updatedProject.user.name,
+        email: updatedProject.user.email,
+        role: updatedProject.user.role,
+      }
+      : null,
+    ownerId: updatedProject.createdBy,
+    projectId: projectId,
+    action: "PROJECT_UPDATED",
+    entityType: "project",
+    entityId: projectId,
+    metadata: {
+      changes: updatedData,
+    },
+    req,
   });
 
   return NextResponse.json(updatedProject);
@@ -135,7 +161,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
   const project = await prisma.project.findFirst({
     where: whereClause,
-    include: { bugs: true },
+    include: { bugs: true, user: true },
   });
 
   const deleted = await prisma.project.deleteMany({
@@ -145,7 +171,23 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   if (deleted.count === 0) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
 
   await logAudit({
-    userId: dbUser.id,
+    actorId: dbUser.id,
+    actorSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
+    ownerSnapshot: project?.user
+      ? {
+        id: project.user.id,
+        name: project.user.name,
+        email: project.user.email,
+        role: project.user.role,
+      }
+      : null,
+    ownerId: project?.user?.id, // 👈 IMPORTANT FIX
+    projectId: projectId,
     action: "PROJECT_DELETED",
     entityType: "project",
     entityId: projectId,
@@ -154,11 +196,12 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         name: project?.name,
         url: project?.url,
         slug: project?.slug,
-        bugCount: project?.bugs.length,
+        bugCount: project?.bugs?.length ?? 0,
       },
       deletedByRole: dbUser.role,
       isAdminDelete: dbUser.role === "ADMIN",
-    }
+    },
+    req,
   });
 
   return NextResponse.json({ success: true });

@@ -21,7 +21,7 @@ interface Bug {
     createdAt: string;
     projectId: string;
     createdBy: string;
-    resolved: boolean;
+    status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
     screenshots: Screenshot[];
 }
 
@@ -168,30 +168,17 @@ export default function ProjectPage() {
     };
 
     const unresolvedBugs = project.bugs
-        .filter(b => !b.resolved)
+        .filter(b => b.status === 'OPEN' || b.status === 'IN_PROGRESS')
         .map(b => ({ ...b, screenshots: b.screenshots ?? [] }));
 
-    const handleResolveBug = (bugId: string) => {
+    const onStatusChange = (bugId: string, status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED') => {
         setProject(prev => {
             if (!prev) return prev;
 
             return {
                 ...prev,
                 bugs: prev.bugs.map(b =>
-                    b.id === bugId ? { ...b, resolved: true } : b
-                ),
-            };
-        });
-    };
-
-    const handleUnResolveBug = (bugId: string) => {
-        setProject(prev => {
-            if (!prev) return prev;
-
-            return {
-                ...prev,
-                bugs: prev.bugs.map(b =>
-                    b.id === bugId ? { ...b, resolved: false } : b
+                    b.id === bugId ? { ...b, status } : b
                 ),
             };
         });
@@ -276,7 +263,7 @@ export default function ProjectPage() {
                                 </div>
                                 <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
                                     <span className="text-sm text-slate-600">Resolved bugs</span>
-                                    <span className="text-sm font-semibold text-slate-900">{project.bugs.filter(b => b.resolved).length}</span>
+                                    <span className="text-sm font-semibold text-slate-900">{project.bugs.filter(b => b.status === 'RESOLVED').length}</span>
                                 </div>
                                 <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
                                     <span className="text-sm text-slate-600">Total reports</span>
@@ -324,7 +311,7 @@ export default function ProjectPage() {
 
                 <BugSection
                     title="Resolved Bugs"
-                    bugs={project.bugs.filter(b => b.resolved)}
+                    bugs={project.bugs.filter(b => b.status === 'RESOLVED')}
                     emptyMessage="No resolved bugs yet"
                     emptySubMessage="Keep pushing forward! 🛠️"
                     onBugClick={setSelectedBug}
@@ -335,8 +322,7 @@ export default function ProjectPage() {
                     <BugDetailModal
                         bug={selectedBug}
                         onClose={() => setSelectedBug(null)}
-                        onResolved={handleResolveBug}
-                        onUnResolved={handleUnResolveBug}
+                        onStatusChange={onStatusChange}
                     />
                 )}
             </div>
