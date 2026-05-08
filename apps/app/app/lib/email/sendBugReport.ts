@@ -22,7 +22,7 @@ export async function sendBugReport({
   screenshotUrl,
 }: BugReportEmailProps) {
   await transporter.sendMail({
-    from: `"CrowdTest" <hello@crowdtest.dev>`,
+    from: `"CrowdTest" <${process.env.EMAIL_SENDER}>`,
     to: receiverEmail,
     subject: `New ${severity} bug reported in ${projectName}`,
     html: buildBugEmailHtml({
