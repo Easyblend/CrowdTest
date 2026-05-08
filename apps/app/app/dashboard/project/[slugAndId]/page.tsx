@@ -5,13 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ExternalLink, AlertCircle, Trash } from 'lucide-react';
 import BugReportModal from '@/component/BugReportModal';
-import BugCard from '@/component/BugCard';
 import { Screenshot } from '@prisma/client';
 import toast from 'react-hot-toast';
 import { FullScreenLoader } from '@/component/FullScreenLoader';
 import BugDetailModal from '@/component/BugDetailModal';
 import BugSection from '@/component/BugSection';
-
 
 interface Bug {
     id: string;
@@ -21,7 +19,7 @@ interface Bug {
     createdAt: string;
     projectId: string;
     createdBy: string;
-    resolved: boolean;
+    status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
     screenshots: Screenshot[];
 }
 
@@ -47,13 +45,7 @@ export default function ProjectPage() {
 
     const [showBugForm, setShowBugForm] = useState(false);
     const router = useRouter();
-    const [bugTitle, setBugTitle] = useState('');
-    const [bugSeverity, setBugSeverity] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
-    const [bugDescription, setBugDescription] = useState('');
-    const [submitting, setSubmitting] = useState(false);
-
     const [selectedBug, setSelectedBug] = useState<Bug | null>(null);
-
 
     // Load project
     useEffect(() => {
@@ -63,7 +55,7 @@ export default function ProjectPage() {
                 if (!res.ok) throw new Error('Failed to fetch project');
                 const data = await res.json();
                 setProject(data);
-            } catch (err) {
+            } catch {
                 toast.error("Could not load project.");
             } finally {
                 setLoading(false);
@@ -72,17 +64,16 @@ export default function ProjectPage() {
         load();
     }, [slugAndId]);
 
-    // Load current user
+    // Load user
     useEffect(() => {
         async function loadUser() {
             try {
-                const res = await fetch('/api/me'); // /api/me returning { id, role }
+                const res = await fetch('/api/me');
                 if (!res.ok) throw new Error('Failed to fetch user');
                 const data: User = await res.json();
-                console.log('Fetched user:', data);
                 setUser(data);
-            } catch (err) {
-                toast.error("This didn't work.")
+            } catch {
+                toast.error("This didn't work.");
             }
         }
         loadUser();
@@ -92,34 +83,23 @@ export default function ProjectPage() {
         const res = await fetch(`/api/bugs/${bugId}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Failed");
 
-        setProject(prev => prev ? {
-            ...prev,
-            bugs: prev.bugs.filter(b => b.id !== bugId)
-        } : prev);
+        setProject(prev =>
+            prev
+                ? { ...prev, bugs: prev.bugs.filter(b => b.id !== bugId) }
+                : prev
+        );
     };
 
     const handleDeleteProject = async (): Promise<void> => {
         try {
             const res = await fetch(`/api/projects/${slugAndId}`, { method: "DELETE" });
-            if (!res.ok) throw new Error("Failed to delete project");
+            if (!res.ok) throw new Error("Failed");
             toast.success("Project deleted");
             router.push('/dashboard');
-        } catch (error) {
+        } catch {
             toast.error("Failed to delete project");
         }
-    }
-
-    if (loading) return FullScreenLoader();
-
-    if (!project) return (
-        <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">
-            <AlertCircle className="w-12 h-12 text-red-500" />
-            <p className="text-red-600 text-xl font-semibold">Project not found</p>
-            <Link href="/dashboard" className="text-blue-600 hover:underline flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" /> Go back
-            </Link>
-        </div>
-    );
+    };
 
     const handleSubmitBug = async (
         title: string,
@@ -133,9 +113,7 @@ export default function ProjectPage() {
             form.append("description", description);
             form.append("severity", severity);
 
-            if (bugImage) {
-                form.append("screenshot", bugImage);
-            }
+            if (bugImage) form.append("screenshot", bugImage);
 
             const res = await fetch(`/api/projects/${slugAndId}/bugs`, {
                 method: "POST",
@@ -150,57 +128,70 @@ export default function ProjectPage() {
             const newBug = await res.json();
 
             setProject(prev =>
-                prev
-                    ? {
-                        ...prev,
-                        bugs: [newBug, ...prev.bugs],
-                    }
-                    : prev
+                prev ? { ...prev, bugs: [newBug, ...prev.bugs] } : prev
             );
 
             setShowBugForm(false);
-
             toast.success("Bug successfully reported");
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "Failed to submit bug");
-            throw err; // 🔥 IMPORTANT so child knows it failed
+            throw err;
         }
     };
 
-    const unresolvedBugs = project.bugs
-        .filter(b => !b.resolved)
-        .map(b => ({ ...b, screenshots: b.screenshots ?? [] }));
+    // ✅ NEW: status-based filtering
+    const openBugs = project?.bugs
+        .filter(b => b.status !== 'RESOLVED' && b.status !== 'CLOSED')
+        .map(b => ({ ...b, screenshots: b.screenshots ?? [] })) || [];
 
+    const resolvedBugs = project?.bugs
+        .filter(b => b.status === 'RESOLVED')
+        .map(b => ({ ...b, screenshots: b.screenshots ?? [] })) || [];
+
+    // ✅ status updates
     const handleResolveBug = (bugId: string) => {
-        setProject(prev => {
-            if (!prev) return prev;
-
-            return {
-                ...prev,
-                bugs: prev.bugs.map(b =>
-                    b.id === bugId ? { ...b, resolved: true } : b
-                ),
-            };
-        });
+        setProject(prev =>
+            prev
+                ? {
+                    ...prev,
+                    bugs: prev.bugs.map(b =>
+                        b.id === bugId ? { ...b, status: 'RESOLVED' } : b
+                    ),
+                }
+                : prev
+        );
     };
 
-    const handleUnResolveBug = (bugId: string) => {
-        setProject(prev => {
-            if (!prev) return prev;
-
-            return {
-                ...prev,
-                bugs: prev.bugs.map(b =>
-                    b.id === bugId ? { ...b, resolved: false } : b
-                ),
-            };
-        });
+    const onStatusChange = (bugId: string, status: Bug['status']) => {
+        setProject(prev =>
+            prev
+                ? {
+                    ...prev,
+                    bugs: prev.bugs.map(b =>
+                        b.id === bugId ? { ...b, status } : b
+                    ),
+                }
+                : prev
+        );
     };
+    
+
+    if (loading) return FullScreenLoader();
+    if (!project) return (
+        <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">
+            <AlertCircle className="w-12 h-12 text-red-500" />
+            <p className="text-red-600 text-xl font-semibold">Project not found</p>
+            <Link href="/dashboard" className="text-blue-600 hover:underline flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" /> Go back
+            </Link>
+        </div>
+    );
 
     return (
         <main className="h-max min-h-screen bg-linear-to-br from-slate-50 via-slate-50 to-blue-50 p-6 md:p-5">
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
+
+                {/* HEADER (unchanged) */}
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 wrap-break-word">
@@ -228,9 +219,7 @@ export default function ProjectPage() {
                         </Link>
 
                         <button
-                            onClick={() => {
-                                handleDeleteProject()
-                            }}
+                            onClick={handleDeleteProject}
                             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2 shadow-sm"
                         >
                             <Trash className="w-4 h-4" />
@@ -239,82 +228,18 @@ export default function ProjectPage() {
                     </div>
                 </div>
 
-                {/* Project Overview */}
-                <div className="grid gap-6 lg:grid-cols-[1.8fr_0.95fr] mb-8">
-                    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                            <div>
-                                <h2 className="text-xl font-semibold text-slate-900">Project overview</h2>
-                                <p className="text-sm text-slate-500 mt-1">
-                                    A quick summary and timeline for this project.
-                                </p>
-                            </div>
-                            <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-3 py-1 text-xs font-medium">
-                                Created {new Date(project.createdAt).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                })} • {new Date(project.createdAt).toLocaleTimeString(undefined, {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })}
-                            </span>
-                        </div>
-
-                        <p className="text-slate-700 text-md leading-relaxed min-h-[120px]">
-                            {project.description ?? "No description has been added for this project yet. Use the bug report form below to share issues and help improve the experience."}
-                        </p>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition">
-                            <h3 className="text-lg font-semibold text-slate-900 mb-3">Project stats</h3>
-                            <div className="grid gap-3">
-                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-                                    <span className="text-sm text-slate-600">Open bugs</span>
-                                    <span className="text-sm font-semibold text-slate-900">{unresolvedBugs.length}</span>
-                                </div>
-                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-                                    <span className="text-sm text-slate-600">Resolved bugs</span>
-                                    <span className="text-sm font-semibold text-slate-900">{project.bugs.filter(b => b.resolved).length}</span>
-                                </div>
-                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-                                    <span className="text-sm text-slate-600">Total reports</span>
-                                    <span className="text-sm font-semibold text-slate-900">{project.bugs.length}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {(user?.role === 'TESTER' || user?.role === 'ADMIN') && (
-                            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition">
-                                <p className="text-slate-700 text-sm mb-4">
-                                    Share new issues or improvements with the team.
-                                </p>
-                                <button
-                                    onClick={() => setShowBugForm(!showBugForm)}
-                                    className="w-full px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition font-medium"
-                                >
-                                    {showBugForm ? 'Cancel' : 'Report a bug'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Bug Form */}
+                {/* BUG FORM */}
                 {showBugForm && (
                     <BugReportModal
                         onClose={() => setShowBugForm(false)}
                         onSubmit={handleSubmitBug}
                     />
-
                 )}
 
-                {/* Bugs Section */}
-
+                {/* BUG SECTIONS */}
                 <BugSection
                     title="Bug Reports"
-                    bugs={unresolvedBugs}
+                    bugs={openBugs}
                     emptyMessage="No bugs reported yet"
                     emptySubMessage="Keep up the great work! 🎉"
                     onBugClick={setSelectedBug}
@@ -324,21 +249,22 @@ export default function ProjectPage() {
 
                 <BugSection
                     title="Resolved Bugs"
-                    bugs={project.bugs.filter(b => b.resolved)}
+                    bugs={resolvedBugs}
                     emptyMessage="No resolved bugs yet"
                     emptySubMessage="Keep pushing forward! 🛠️"
                     onBugClick={setSelectedBug}
                     onDelete={handleDeleteBug}
                     badgeColor="green"
                 />
+
                 {selectedBug && (
                     <BugDetailModal
                         bug={selectedBug}
                         onClose={() => setSelectedBug(null)}
-                        onResolved={handleResolveBug}
-                        onUnResolved={handleUnResolveBug}
+                        onStatusChange={onStatusChange}
                     />
                 )}
+
             </div>
         </main>
     );

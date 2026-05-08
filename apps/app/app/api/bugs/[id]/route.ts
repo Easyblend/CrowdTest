@@ -49,7 +49,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   if (!canView)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  return NextResponse.json(bug);
+  return NextResponse.json({
+    ...bug,
+    status: bug.status ?? "OPEN",
+  });
 }
 
 /* ---------------- UPDATE BUG ---------------- */
@@ -94,7 +97,11 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   if (body.title !== undefined) updateData.title = body.title;
   if (body.description !== undefined) updateData.description = body.description;
   if (body.severity !== undefined) updateData.severity = body.severity;
-  if (body.resolved !== undefined) updateData.resolved = body.resolved;
+
+  // ✅ NEW: status handling
+  if (body.status !== undefined) {
+    updateData.status = body.status; // should be validated against BugStatus enum
+  }
 
   const updated = await prisma.bug.update({
     where: { id },

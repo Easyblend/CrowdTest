@@ -1,6 +1,6 @@
 import { Screenshot } from '@prisma/client';
 import { AlertCircle } from 'lucide-react';
-import React from 'react'
+import React from 'react';
 import BugCard from './BugCard';
 
 interface Bug {
@@ -11,7 +11,7 @@ interface Bug {
     createdAt: string;
     projectId: string;
     createdBy: string;
-    resolved: boolean;
+    status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
     screenshots: Screenshot[];
 }
 
@@ -22,15 +22,35 @@ interface BugSectionProps {
     emptySubMessage: string;
     onBugClick: (bug: Bug) => void;
     onDelete: (bugId: string) => void;
-    badgeColor: string;
+    badgeColor: 'blue' | 'green' | 'red' | 'yellow' | 'gray';
 }
 
-function BugSection({ title, bugs, emptyMessage, emptySubMessage, onBugClick, onDelete, badgeColor }: BugSectionProps) {
+// ✅ Safe Tailwind mapping (fixes dynamic class issue)
+const badgeStyles = {
+    blue: 'bg-blue-100 text-blue-700',
+    green: 'bg-green-100 text-green-700',
+    red: 'bg-red-100 text-red-700',
+    yellow: 'bg-yellow-100 text-yellow-700',
+    gray: 'bg-gray-100 text-gray-700',
+};
+
+function BugSection({
+    title,
+    bugs,
+    emptyMessage,
+    emptySubMessage,
+    onBugClick,
+    onDelete,
+    badgeColor
+}: BugSectionProps) {
     return (
         <section className="mt-8">
             <div className="flex items-center gap-3 mb-8">
                 <h2 className="text-3xl font-bold text-slate-900">{title}</h2>
-                <span className={`bg-${badgeColor}-100 text-${badgeColor}-700 px-3 py-1 rounded-full text-sm font-semibold`}>
+
+                <span
+                    className={`px-3 py-1 rounded-full text-sm font-semibold ${badgeStyles[badgeColor]}`}
+                >
                     {bugs.length}
                 </span>
             </div>
@@ -44,7 +64,11 @@ function BugSection({ title, bugs, emptyMessage, emptySubMessage, onBugClick, on
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {bugs.map(bug => (
-                        <div key={bug.id} onClick={() => onBugClick(bug)} className="cursor-pointer">
+                        <div
+                            key={bug.id}
+                            onClick={() => onBugClick(bug)}
+                            className="cursor-pointer"
+                        >
                             <BugCard bug={bug} onDelete={onDelete} />
                         </div>
                     ))}
