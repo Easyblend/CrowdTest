@@ -3,6 +3,7 @@ import { transporter } from "./transporter";
 interface Props {
     receiverEmail: string;
     receiverName: string;
+    projectName: string;
 
     bugs: {
         id: string;
@@ -14,15 +15,15 @@ export async function sendResolvedReminder({
     receiverEmail,
     receiverName,
     bugs,
+    projectName
 }: Props) {
 
     try {
 
         const result = await transporter.sendMail({
-            from: `"CrowdTest" <${process.env.EMAIL_SENDER}>`,
+            from: `"${projectName} via CrowdTest" <${process.env.EMAIL_SENDER}>`,
             to: receiverEmail,
-            subject: `🧪 ${bugs.length} resolved bug(s) awaiting verification`,
-
+            subject: `Review needed: ${projectName} (${bugs.length} resolved bugs)`,
             html: buildEmail({ receiverName, bugs }),
         });
 

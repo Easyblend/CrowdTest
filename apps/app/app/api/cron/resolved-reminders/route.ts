@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
             await sendResolvedReminder({
                 receiverEmail: email,
                 receiverName: group.user.name ?? "there",
-
+                projectName: group.bugs[0].project.name ?? "your webapp",
                 bugs: group.bugs.map((bug: any) => ({
                     id: bug.id,
                     title: bug.title,
