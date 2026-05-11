@@ -1,10 +1,14 @@
+// /api/cron/bug-reminders/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendResolvedReminder } from "@/lib/email/sendResolvedReminder";
+import { sendBugReminderEmail } from "@/lib/email/sendBugReminderEmail";
 import { logAudit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
-    console.log("🔥 CRON ROUTE HIT");
+
+    console.log("🔥 BUG REMINDER CRON HIT");
+
     // 🔒 Protect route
     const authHeader = req.headers.get("authorization");
 
@@ -19,10 +23,12 @@ export async function GET(req: NextRequest) {
 
     try {
 
-        // 🐞 Find resolved bugs
+        // 🐞 Fetch OPEN + RESOLVED bugs
         const bugs = await prisma.bug.findMany({
             where: {
-                status: "RESOLVED",
+                status: {
+                    in: ["OPEN", "RESOLVED"],
+                },
             },
 
             include: {
@@ -32,70 +38,113 @@ export async function GET(req: NextRequest) {
                     },
                 },
             },
+
+            orderBy: {
+                createdAt: "desc",
+            },
         });
 
-        // Nothing to send
+        console.log(`🐞 Found ${bugs.length} bugs`);
+
         if (!bugs.length) {
+
             return NextResponse.json({
                 success: true,
-                message: "No resolved bugs found",
+                message: "No bugs found",
             });
         }
 
-        // 📦 Group bugs by user email
+        // 📦 Group by OWNER + PROJECT
         const grouped = bugs.reduce((acc, bug) => {
 
-            const email = bug.project.user.email;
+            const owner = bug.project.user;
+            const project = bug.project;
 
-            if (!acc[email]) {
-                acc[email] = {
-                    user: bug.project.user,
+            const key = `${owner.email}:${project.id}`;
+
+            if (!acc[key]) {
+                acc[key] = {
+                    owner,
+                    project,
                     bugs: [],
                 };
             }
 
-            acc[email].bugs.push(bug);
+            acc[key].bugs.push(bug);
 
             return acc;
 
         }, {} as Record<string, any>);
 
+        const sentEmails: string[] = [];
+
         // 📧 Send emails
-        for (const email in grouped) {
+        for (const key in grouped) {
 
-            const group = grouped[email];
+            const group = grouped[key];
 
-            await sendResolvedReminder({
-                receiverEmail: email,
-                receiverName: group.user.name ?? "there",
-                projectName: group.bugs[0].project.name ?? "your webapp",
-                bugs: group.bugs.map((bug: any) => ({
+            const openBugs = group.bugs.filter(
+                (bug: any) => bug.status === "OPEN"
+            );
+
+            const resolvedBugs = group.bugs.filter(
+                (bug: any) => bug.status === "RESOLVED"
+            );
+
+            await sendBugReminderEmail({
+                receiverEmail: group.owner.email,
+                receiverName: group.owner.name ?? "there",
+
+                projectName: group.project.name ?? "your project",
+
+                openBugs: openBugs.map((bug: any) => ({
+                    id: bug.id,
+                    title: bug.title,
+                })),
+
+                resolvedBugs: resolvedBugs.map((bug: any) => ({
                     id: bug.id,
                     title: bug.title,
                 })),
             });
+
+            sentEmails.push(group.owner.email);
+
+            // 📝 Audit log
             await logAudit({
                 actorSnapshot: {
                     type: "system",
                     name: "CRON_JOB",
-                    job: "RESOLVED_BUG_REMINDER",
-                },
-                actorId: "SYSTEM",
-                projectId: group.bugs[0].projectId,
-                ownerId: group.user.id,
-                ownerSnapshot: {
-                    id: group.user.id,
-                    name: group.user.name,
-                    email: group.user.email,
+                    job: "BUG_REMINDER",
                 },
 
-                action: "CRON_RESOLVED_REMINDER_SENT",
+                actorId: "SYSTEM",
+
+                ownerId: group.owner.id,
+
+                ownerSnapshot: {
+                    id: group.owner.id,
+                    name: group.owner.name,
+                    email: group.owner.email,
+                },
+
+                projectId: group.project.id,
+
+                action: "CRON_BUG_REMINDER_SENT",
+
                 entityType: "system_job",
-                entityId: email,
+
+                entityId: group.owner.email,
 
                 metadata: {
-                    bugCount: group.bugs.length,
+                    projectId: group.project.id,
+                    projectName: group.project.name,
+
+                    openBugCount: openBugs.length,
+                    resolvedBugCount: resolvedBugs.length,
+
                     bugIds: group.bugs.map((b: any) => b.id),
+
                     runAt: new Date().toISOString(),
                 },
 
@@ -105,13 +154,13 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            emailsSent: Object.keys(grouped).length,
-            emails: Object.keys(grouped),
+            emailsSent: sentEmails.length,
+            emails: sentEmails,
         });
 
     } catch (error) {
 
-        console.error(error);
+        console.error("❌ CRON ERROR:", error);
 
         return NextResponse.json(
             {
