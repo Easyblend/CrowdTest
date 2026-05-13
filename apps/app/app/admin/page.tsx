@@ -6,18 +6,20 @@ import { FullScreenLoader } from '@/component/FullScreenLoader';
 import toast from 'react-hot-toast';
 
 interface Bug {
-  id: number;
+  id: string;
   title: string;
-  severity: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'OPEN' | 'RESOLVED';
 }
 
 interface Project {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   url: string;
   description?: string;
   bugs: Bug[];
+  createdAt: string;
 }
 
 export default function AdminDashboard() {
