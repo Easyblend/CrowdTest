@@ -2,25 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import AddProjectModal from '@/component/AddProjectModal';
-import LogoutBtn from '@/component/LogoutBtn';
 import ProjectCard from '@/component/ProjectCard';
 import { FullScreenLoader } from '@/component/FullScreenLoader';
 import toast from 'react-hot-toast';
 import EditProjectModal from '@/component/EditProjectModal';
 
 interface Bug {
-  id: number;
+  id: string;
   title: string;
-  severity: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'OPEN' | 'RESOLVED';
 }
 
 interface Project {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   url: string;
   description?: string;
   bugs?: Bug[];
+  createdAt: string;
 }
 
 export default function DashboardPage() {
@@ -35,7 +36,7 @@ export default function DashboardPage() {
         const res = await fetch('/api/projects',
           { credentials: 'include' }
         );
-        
+
         if (!res.ok) throw new Error('Failed to fetch projects');
         const data: Project[] = await res.json();
         setProjects(data);
@@ -53,9 +54,9 @@ export default function DashboardPage() {
     setProjects(prev => [project, ...prev]);
   };
 
-if (loading) {
-  return <FullScreenLoader />;
-}
+  if (loading) {
+    return <FullScreenLoader />;
+  }
 
   return (
     <main className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
