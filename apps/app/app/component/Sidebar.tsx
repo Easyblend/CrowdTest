@@ -102,17 +102,15 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
                             {link.label}
                         </Link>
                     ))}
-                    {user?.role === 'ADMIN' && (
-                        <Link
-                            href="/audit-trail"
-                            className="group flex items-center rounded-xl px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
-                        >
-                            <span className="mr-3 text-slate-500 group-hover:text-cyan-400">
-                                •
-                            </span>
-                            Audit Trail
-                        </Link>
-                    )}
+                    <Link
+                        href="/dashboard/audit-trail"
+                        className="group flex items-center rounded-xl px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+                    >
+                        <span className="mr-3 text-slate-500 group-hover:text-cyan-400">
+                            •
+                        </span>
+                        Audit Trail
+                    </Link>
                 </nav>
 
 

@@ -1,21 +1,22 @@
 'use client';
 
-import { Edit } from 'lucide-react';
+import { Bug, Edit, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 interface Bug {
-  id: number;
+  id: string;
   title: string;
-  severity: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'OPEN' | 'RESOLVED';
 }
 
 interface Project {
-  id: number;
+  id: string;
   name: string;
   url: string;
   slug: string;
-  description?: string;
   bugs?: Bug[];
+  createdAt: string;
 }
 
 interface ProjectCardProps {
@@ -24,47 +25,129 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ project, setEditingProject }: ProjectCardProps) {
+
+  const bugs = project.bugs ?? [];
+
+  const openBugs = bugs.filter(b => b.status === 'OPEN');
+  const resolvedBugs = bugs.filter(b => b.status === 'RESOLVED');
+
+  const createdDate = new Date(project.createdAt).toLocaleDateString();
+
   return (
-    <div className="bg-white rounded-lg shadow-md border border-slate-200 p-6 hover:shadow-xl hover:border-blue-300 transition-all duration-300 group">
-      <div className="flex flex-col h-full">
-        <Link href={`/dashboard/project/${project.id}`} className="block flex-1 hover:no-underline">
-          <div className="mb-4">
-            <h2 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+    <div className="
+      group relative rounded-2xl border border-slate-200 bg-white
+      p-6 shadow-sm transition-all duration-300
+      hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-300
+    ">
+
+      {/* HEADER */}
+      <Link href={`/dashboard/project/${project.id}`} className="block">
+
+        <div className="flex items-start justify-between gap-4">
+
+          {/* TITLE */}
+          <div className="min-w-0">
+
+            <h2 className="
+              text-base font-semibold text-slate-900
+              tracking-tight
+            ">
               {project.name}
             </h2>
 
-            {project.description && (
-              <p className="text-slate-600 text-sm line-clamp-2">{project.description}</p>
-            )}
+            {/* META ROW (clean separation) */}
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+
+              <div className="flex items-center gap-1">
+                <Globe className="h-3.5 w-3.5 text-slate-400" />
+                <span className="truncate max-w-[180px]">
+                  {project.url}
+                </span>
+              </div>
+
+              <span className="text-slate-300">•</span>
+
+              <span>
+                Created {createdDate}
+              </span>
+
+            </div>
+
           </div>
 
-          <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100 mt-auto">
-            <span className="text-slate-600 text-sm font-medium">Bugs:</span>
-            <span className="bg-red-100 text-red-700 font-bold rounded-full px-3 py-1 text-sm">
-              {project.bugs?.length ?? 0}
-            </span>
+          {/* BUG BADGE (clean chip) */}
+          <div className="
+            flex items-center gap-1
+            rounded-full bg-slate-100
+            px-2.5 py-1 text-xs font-medium
+            text-slate-700
+          ">
+            <Bug className="h-3.5 w-3.5 text-slate-500" />
+            {bugs.length}
           </div>
-        </Link>
 
-        <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t border-slate-100">
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline transition-colors flex-1"
-          >
-            Visit →
-          </a>
-          <button
-            onClick={() => setEditingProject?.(project)}
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-1"
-            title="Edit project"
-          >
-            <Edit className="w-4 h-4" />
-            <span className="text-sm font-medium">Edit</span>
-          </button>
         </div>
+
+        {/* STATS */}
+        <div className="mt-5 grid grid-cols-3 gap-3">
+
+          <div className="rounded-xl border border-slate-100 bg-slate-50/60 py-2 text-center">
+            <p className="text-[11px] text-slate-500">Open</p>
+            <p className="mt-0.5 text-sm font-semibold text-slate-900">
+              {openBugs.length}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 bg-slate-50/60 py-2 text-center">
+            <p className="text-[11px] text-slate-500">Resolved</p>
+            <p className="mt-0.5 text-sm font-semibold text-slate-900">
+              {resolvedBugs.length}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 bg-slate-50/60 py-2 text-center">
+            <p className="text-[11px] text-slate-500">Total</p>
+            <p className="mt-0.5 text-sm font-semibold text-slate-900">
+              {bugs.length}
+            </p>
+          </div>
+
+        </div>
+      </Link>
+
+      {/* ACTIONS */}
+      <div className="
+        mt-5 flex items-center justify-between
+        border-t border-slate-100 pt-4
+      ">
+
+        <a
+          href={project.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+            text-sm font-medium text-slate-600
+            hover:text-slate-900 transition
+          "
+        >
+          Open site →
+        </a>
+
+        <button
+          onClick={() => setEditingProject?.(project)}
+          className="
+            inline-flex items-center gap-1
+            rounded-lg bg-slate-900 px-3 py-1.5
+            text-sm font-medium text-white
+            hover:bg-slate-800 transition
+          "
+        >
+          <Edit className="h-4 w-4" />
+          Edit
+        </button>
+
       </div>
+
     </div>
   );
 }

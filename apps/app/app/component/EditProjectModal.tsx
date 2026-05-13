@@ -3,11 +3,12 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 interface Project {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   url: string;
   description?: string;
+  createdAt: string;
 }
 
 interface EditProjectModalProps {
@@ -54,7 +55,7 @@ export default function EditProjectModal({ onClose, onProjectUpdated, project }:
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-gray-900"></h2>
+        <h2 className="text-3xl font-bold mb-6 text-gray-900">Edit Project</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">Project Name</label>
