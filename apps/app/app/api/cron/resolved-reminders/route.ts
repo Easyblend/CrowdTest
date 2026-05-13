@@ -29,6 +29,15 @@ export async function GET(req: NextRequest) {
                 status: {
                     in: ["OPEN", "RESOLVED"],
                 },
+
+                // 🚨 Only fetch bugs whose project has a valid owner
+                project: {
+                    user: {
+                        id: {
+                            not: "",
+                        },
+                    },
+                },
             },
 
             include: {
@@ -54,15 +63,50 @@ export async function GET(req: NextRequest) {
             });
         }
 
+        // 🧠 Strong typing
+        type GroupedBugs = Record<
+            string,
+            {
+                owner: NonNullable<
+                    typeof bugs[number]["project"]["user"]
+                >;
+
+                project: typeof bugs[number]["project"];
+
+                bugs: typeof bugs[number][];
+            }
+        >;
+
         // 📦 Group by OWNER + PROJECT
-        const grouped = bugs.reduce((acc, bug) => {
+        const grouped = bugs.reduce<GroupedBugs>((acc, bug) => {
+
+            // 🚨 Runtime safety
+            if (!bug.project || !bug.project.user) {
+
+                console.warn(
+                    `⚠️ Skipping bug ${bug.id} because project/user relation is missing`
+                );
+
+                return acc;
+            }
 
             const owner = bug.project.user;
             const project = bug.project;
 
+            // 🚨 Extra safety
+            if (!owner.email) {
+
+                console.warn(
+                    `⚠️ Skipping bug ${bug.id} because owner email is missing`
+                );
+
+                return acc;
+            }
+
             const key = `${owner.email}:${project.id}`;
 
             if (!acc[key]) {
+
                 acc[key] = {
                     owner,
                     project,
@@ -74,7 +118,7 @@ export async function GET(req: NextRequest) {
 
             return acc;
 
-        }, {} as Record<string, any>);
+        }, {});
 
         const sentEmails: string[] = [];
 
@@ -84,25 +128,28 @@ export async function GET(req: NextRequest) {
             const group = grouped[key];
 
             const openBugs = group.bugs.filter(
-                (bug: any) => bug.status === "OPEN"
+                (bug) => bug.status === "OPEN"
             );
 
             const resolvedBugs = group.bugs.filter(
-                (bug: any) => bug.status === "RESOLVED"
+                (bug) => bug.status === "RESOLVED"
             );
 
             await sendBugReminderEmail({
                 receiverEmail: group.owner.email,
-                receiverName: group.owner.name ?? "there",
 
-                projectName: group.project.name ?? "your project",
+                receiverName:
+                    group.owner.name ?? "there",
 
-                openBugs: openBugs.map((bug: any) => ({
+                projectName:
+                    group.project.name ?? "your project",
+
+                openBugs: openBugs.map((bug) => ({
                     id: bug.id,
                     title: bug.title,
                 })),
 
-                resolvedBugs: resolvedBugs.map((bug: any) => ({
+                resolvedBugs: resolvedBugs.map((bug) => ({
                     id: bug.id,
                     title: bug.title,
                 })),
@@ -138,12 +185,19 @@ export async function GET(req: NextRequest) {
 
                 metadata: {
                     projectId: group.project.id,
-                    projectName: group.project.name,
 
-                    openBugCount: openBugs.length,
-                    resolvedBugCount: resolvedBugs.length,
+                    projectName:
+                        group.project.name,
 
-                    bugIds: group.bugs.map((b: any) => b.id),
+                    openBugCount:
+                        openBugs.length,
+
+                    resolvedBugCount:
+                        resolvedBugs.length,
+
+                    bugIds: group.bugs.map(
+                        (b) => b.id
+                    ),
 
                     runAt: new Date().toISOString(),
                 },
