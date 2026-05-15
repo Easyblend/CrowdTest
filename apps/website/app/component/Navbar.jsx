@@ -80,7 +80,7 @@ export default function Navbar() {
 
             {/* MOBILE MENU */}
             <div
-                className={`md:hidden fixed inset-0 top-16 bg-white dark:bg-slate-950 flex flex-col items-center gap-6 pt-10 text-lg font-medium transition-all duration-300 ${
+                className={`md:hidden fixed inset-0 top-16 h-screen bg-white dark:bg-slate-950 flex flex-col items-center gap-6 pt-10 text-lg font-medium transition-all duration-300 ${
                     openMobileMenu
                         ? "opacity-100 translate-x-0"
                         : "opacity-0 -translate-x-full pointer-events-none"
