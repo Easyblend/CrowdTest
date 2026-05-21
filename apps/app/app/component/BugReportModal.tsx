@@ -16,11 +16,13 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
         submitting,
         setTitle,
         setDescription,
+        improving,
         setSeverity,
         handleImageChange,
         handleSubmit,
         canSubmit,
         severityClasses,
+        handleImproveWithAI,
     } = useBugReportForm({ onSubmit });
 
     return (
