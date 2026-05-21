@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromRequest } from '@/app/lib/auth';
+import { getUserFromRequest } from '@/lib/auth';
+import { createSupabaseServer } from '@/lib/supabaseServer';
 
 export const runtime = 'nodejs';
 
@@ -24,7 +25,14 @@ Rules:
 - Respond with STRICT JSON only, matching: {"title": string, "description": string}. No markdown, no commentary.`;
 
 export async function POST(req: NextRequest) {
-    const user = getUserFromRequest(req);
+  const supabase = await createSupabaseServer();
+  
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+  
+    if (!user)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
