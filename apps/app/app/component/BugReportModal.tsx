@@ -14,6 +14,35 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
     const [severity, setSeverity] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
     const [submitting, setSubmitting] = useState(false);
     const [bugImage, setBugImage] = useState<File | null>(null);
+    const [improving, setImproving] = useState(false);
+
+    const handleImproveWithAI = async () => {
+        if (!title.trim() && !description.trim()) {
+            toast.error('Type something first, then I can improve it.');
+            return;
+        }
+        setImproving(true);
+        try {
+            const res = await fetch('/api/ai/improve-bug', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                toast.error(data?.error || 'Could not improve right now.');
+                return;
+            }
+            if (data.title) setTitle(data.title);
+            if (data.description) setDescription(data.description);
+            toast.success('Improved with AI ✨');
+        } catch (err) {
+            console.error(err);
+            toast.error('Network error while improving.');
+        } finally {
+            setImproving(false);
+        }
+    };
 
     const handleSubmit = async () => {
         if (!title) return;
@@ -79,8 +108,20 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
                     placeholder="Describe what went wrong..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full mb-4 p-3 border-2 border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition min-h-24 resize-none"
+                    className="w-full mb-2 p-3 border-2 border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition min-h-24 resize-none"
                 />
+
+                {/* Improve with AI */}
+                <div className="mb-4 flex justify-end">
+                    <button
+                        type="button"
+                        onClick={handleImproveWithAI}
+                        disabled={improving || submitting || (!title.trim() && !description.trim())}
+                        className="px-3 py-1.5 text-sm font-semibold rounded-md bg-linear-to-r from-purple-500 to-blue-500 text-white hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition"
+                    >
+                        {improving ? 'Improving…' : '✨ Improve with AI'}
+                    </button>
+                </div>
 
                 {/* Severity */}
                 <div className={`w-full mb-6 p-3 rounded-md ${severityColors[severity]} transition`}>
