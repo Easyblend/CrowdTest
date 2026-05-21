@@ -1,51 +1,27 @@
 'use client';
 
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useBugReportForm, Severity, BugSubmitFn } from '@/hooks/useBugReportForm';
 
 interface BugReportModalProps {
     onClose: () => void;
-    onSubmit: (title: string, description: string, severity: 'LOW' | 'MEDIUM' | 'HIGH', bugImage?: File) => Promise<String | void>;
+    onSubmit: BugSubmitFn;
 }
 
 export default function BugReportModal({ onClose, onSubmit }: BugReportModalProps) {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [severity, setSeverity] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
-    const [submitting, setSubmitting] = useState(false);
-    const [bugImage, setBugImage] = useState<File | null>(null);
-
-    const handleSubmit = async () => {
-        if (!title) return;
-
-        if (!description) {
-            toast("No description provided. It's recommended to add details.", {
-                icon: "⚠️",
-            });
-        }
-
-        setSubmitting(true);
-
-        try {
-            await onSubmit(title, description, severity, bugImage || undefined);
-            // only runs on SUCCESS
-            setTitle("");
-            setDescription("");
-            setSeverity("LOW");
-            setBugImage(null);
-        } catch (err) {
-            // parent already showed toast
-            console.error(err);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const severityColors = {
-        LOW: 'border-l-4 border-green-500 bg-green-50',
-        MEDIUM: 'border-l-4 border-yellow-500 bg-yellow-50',
-        HIGH: 'border-l-4 border-red-500 bg-red-50',
-    };
+    const {
+        title,
+        description,
+        severity,
+        bugImage,
+        submitting,
+        setTitle,
+        setDescription,
+        setSeverity,
+        handleImageChange,
+        handleSubmit,
+        canSubmit,
+        severityClasses,
+    } = useBugReportForm({ onSubmit });
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
@@ -83,11 +59,11 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
                 />
 
                 {/* Severity */}
-                <div className={`w-full mb-6 p-3 rounded-md ${severityColors[severity]} transition`}>
+                <div className={`w-full mb-6 p-3 rounded-md ${severityClasses[severity]} transition`}>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Severity Level</label>
                     <select
                         value={severity}
-                        onChange={(e) => setSeverity(e.target.value as 'LOW' | 'MEDIUM' | 'HIGH')}
+                        onChange={(e) => setSeverity(e.target.value as Severity)}
                         className="w-full p-2 border-2 border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 font-medium cursor-pointer"
                     >
                         <option value="LOW">🟢 Low</option>
@@ -102,7 +78,7 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
                     <input 
                         type="file"
                         accept=".png,.jpg,.jpeg"
-                        onChange={(e) => setBugImage(e.target.files?.[0] || null)}
+                        onChange={handleImageChange}
                         className="w-full p-3 border-2 border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition cursor-pointer file:mr-3 file:px-3 file:py-1.5 file:bg-blue-500 file:text-white file:rounded file:border-0 file:font-semibold file:cursor-pointer hover:file:bg-blue-600"
                     />
                     {bugImage && <p className="text-sm text-gray-600 mt-2">📎 {bugImage.name}</p>}
@@ -118,7 +94,7 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
                     </button>
                     <button
                         onClick={handleSubmit}
-                        disabled={!title || submitting}
+                        disabled={!canSubmit}
                         className="px-5 py-2.5 bg-blue-500 text-white rounded-md hover:shadow-lg hover:shadow-blue-500/30 transition font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {submitting ? 'Submitting...' : 'Submit Bug'}
