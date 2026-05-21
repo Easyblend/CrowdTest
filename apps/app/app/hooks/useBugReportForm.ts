@@ -27,6 +27,7 @@ const SEVERITY_CLASSES: Record<Severity, string> = {
  * The component using it only renders JSX.
  */
 export function useBugReportForm({ onSubmit }: UseBugReportFormArgs) {
+    const [improving, setImproving] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [severity, setSeverity] = useState<Severity>('LOW');
@@ -65,12 +66,49 @@ export function useBugReportForm({ onSubmit }: UseBugReportFormArgs) {
         }
     };
 
+    const handleImproveWithAI = async () => {
+        if (!title && !description) {
+            toast.error('Nothing to improve');
+            return;
+        }
+
+        setImproving(true);
+
+        try {
+            const res = await fetch('/api/ai/improve-bug', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    description,
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error('AI request failed');
+            }
+
+            const data = await res.json();
+
+            if (data?.title) setTitle(data.title);
+            if (data?.description) setDescription(data.description);
+
+            toast.success('Bug report improved ✨');
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to improve bug report');
+        } finally {
+            setImproving(false);
+        }
+    };
+
     const canSubmit = Boolean(title) && !submitting;
 
     return {
         // state
         title,
         description,
+        improving,
         severity,
         bugImage,
         submitting,
@@ -81,7 +119,7 @@ export function useBugReportForm({ onSubmit }: UseBugReportFormArgs) {
         setSeverity,
         handleImageChange,
         handleSubmit,
-
+        handleImproveWithAI,
         // derived helpers
         canSubmit,
         severityClasses: SEVERITY_CLASSES,
