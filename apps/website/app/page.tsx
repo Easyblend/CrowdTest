@@ -6,7 +6,6 @@ import { FaqSection } from "@/component/FaqSection"
 import Marquee from "react-fast-marquee";
 import { marqueeData } from '../data/marqueeData'
 import { howToUseData } from '../data/featuresData'
-import { useThemeContext } from "../context/ThemeContext";
 import SectionTitle from "@/component/SectionTitle"
 import Navbar from "@/component/Navbar"
 import React from "react";
@@ -14,14 +13,18 @@ import React from "react";
 export default function Page() {
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center text-center px-4 bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-no-repeat bg-cover">
-      {/* Client Components */}
+    <div className="flex min-h-screen flex-col items-center text-center">
       <Navbar />
-      <CommunityBadge />
-      <HeroText />
-      <CTAButton />
-      <SubHeader />
-      <CompaniesMarquee />
+
+      {/* Hero section — gradient bg scoped here so it doesn't repaint the whole page on scroll */}
+      <section className="w-full flex flex-col items-center px-4 pb-24 bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-no-repeat bg-cover bg-top">
+        <CommunityBadge />
+        <HeroText />
+        <CTAButton />
+        <SubHeader />
+        <CompaniesMarquee />
+      </section>
+
       <Section />
       <FaqSection />
     </div>
@@ -32,7 +35,7 @@ export default function Page() {
 
 function CommunityBadge() {
   return (
-    <div id="home" className="flex flex-wrap items-center justify-center gap-3 p-1.5 pr-4 mt-46 rounded-full border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-600/20">
+    <div id="home" className="flex flex-wrap items-center justify-center gap-3 p-1.5 pr-4 mt-44 rounded-full border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-600/20">
       <div className="flex items-center -space-x-3">
         <Image
           className="size-7 rounded-full"
@@ -93,14 +96,13 @@ function SubHeader() {
 }
 
 function CompaniesMarquee() {
-  const { theme } = useThemeContext();
   return (
     <Marquee className="max-w-5xl mx-auto" speed={35}>
       <div className="flex items-center justify-between gap-15">
         {marqueeData.map((item, index) => (
           <div
             key={index}
-            className="flex items-center justify-evenly gap-2 bg-gray-1000 px-3 py-1 rounded-full"
+            className="flex items-center justify-evenly gap-2 px-3 py-1 rounded-full"
           >
             <div className="shrink-0">
               {React.cloneElement(item.icon, { size: 24 })}

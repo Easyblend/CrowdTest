@@ -19,28 +19,47 @@ export const FaqSection = () => {
                 subtitle="Learn how CrowdTest works and get answers about sharing your project, tester feedback, and bug reports"
             />
             <div className="mt-8 w-full">
-                {faqsData.map((faq, index) => (
-                    <div
-                        key={index}
-                        className="border-b border-slate-300 dark:border-purple-900 py-4 cursor-pointer w-full"
-                        onClick={() => toggleIndex(index)}
-                    >
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-base font-medium">
-                                {faq.question}
-                            </h3>
-                            <ChevronDown
-                                size={18}
-                                className={`shrink-0 ${openIndex === index ? "rotate-180" : ""}`}
-                            />
+                {faqsData.map((faq, index) => {
+                    const isOpen = openIndex === index;
+                    const panelId = `faq-panel-${index}`;
+                    const buttonId = `faq-button-${index}`;
+                    return (
+                        <div
+                            key={index}
+                            className="border-b border-slate-300 dark:border-purple-900 w-full"
+                        >
+                            <button
+                                type="button"
+                                id={buttonId}
+                                aria-expanded={isOpen}
+                                aria-controls={panelId}
+                                onClick={() => toggleIndex(index)}
+                                className="flex w-full items-center justify-between py-4 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-sm"
+                            >
+                                <h3 className="text-base font-medium">
+                                    {faq.question}
+                                </h3>
+                                <ChevronDown
+                                    size={18}
+                                    aria-hidden="true"
+                                    className={`shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                                />
+                            </button>
+                            <div
+                                id={panelId}
+                                role="region"
+                                aria-labelledby={buttonId}
+                                hidden={!isOpen}
+                            >
+                                {isOpen && (
+                                    <p className="text-sm text-slate-600 dark:text-slate-300 pb-4">
+                                        {faq.answer}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        {openIndex === index && (
-                            <p className="text-sm text-slate-600 dark:text-slate-300 pt-4">
-                                {faq.answer}
-                            </p>
-                        )}
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
