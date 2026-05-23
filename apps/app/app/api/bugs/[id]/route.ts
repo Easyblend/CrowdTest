@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { logAudit } from "@/lib/audit";
 import cloudinary from "@/lib/cloudinary";
+import { BugStatus } from "@prisma/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -106,14 +107,19 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   if (body.severity !== undefined) updateData.severity = body.severity;
 
   // ✅ NEW: status handling
-  if (body.status !== undefined) {
-    updateData.status = body.status; // should be validated against BugStatus enum
-  }
+if (body.status && Object.values(BugStatus).includes(body.status)) {
+  updateData.status = body.status;
+}
 
   const updated = await prisma.bug.update({
     where: { id },
     data: updateData,
   });
+
+  await prisma.project.update({
+  where: { id: bug.projectId },
+  data: { lastActivityAt: new Date() },
+});
 
   await logAudit({
     actorId: dbUser.id,
@@ -204,6 +210,11 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   await prisma.bug.delete({
     where: { id },
   });
+
+  await prisma.project.update({
+  where: { id: bug.projectId },
+  data: { lastActivityAt: new Date() },
+});
 
   await logAudit({
     actorId: dbUser.id,

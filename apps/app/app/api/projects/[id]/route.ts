@@ -74,6 +74,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const updatedData: any = {};
 
+  updatedData.lastActivityAt = new Date(); // Update last activity when project name changes
   if (data.name !== undefined) {
     updatedData.name = data.name;
     updatedData.slug = slugify(data.name, { lower: true, strict: true });
@@ -100,6 +101,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   });
 
   if (!updatedProject) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
+
 
 
   await logAudit({
