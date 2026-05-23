@@ -44,7 +44,7 @@ Output:
 `;
 
 export async function POST(req: NextRequest) {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
   
     const {
       data: { user },

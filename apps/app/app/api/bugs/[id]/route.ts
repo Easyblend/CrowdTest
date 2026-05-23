@@ -13,7 +13,7 @@ interface RouteParams {
 
 /* ---------------- GET BUG ---------------- */
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
 /* ---------------- UPDATE BUG ---------------- */
 export async function PUT(req: NextRequest, { params }: RouteParams) {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
@@ -151,7 +151,7 @@ if (body.status && Object.values(BugStatus).includes(body.status)) {
 
 /* ---------------- DELETE BUG ---------------- */
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },

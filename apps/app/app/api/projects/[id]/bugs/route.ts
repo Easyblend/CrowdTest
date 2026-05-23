@@ -33,7 +33,7 @@ function uploadToCloudinary(
 
 /* ---------------- CREATE BUG ---------------- */
 export async function POST(req: NextRequest, { params }: RouteParams) {
-  const supabase = await createSupabaseServer();
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
