@@ -99,7 +99,9 @@ export default function Navbar() {
 
                 {/* Mobile CTA */}
                 <Link
-                    href=""
+                    href="https://app.crowdtest.dev/signup"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={() => setOpenMobileMenu(false)}
                     className="mt-4 px-6 py-3 text-white bg-purple-600 hover:bg-purple-700 rounded-md transition"
                 >
