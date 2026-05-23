@@ -7,8 +7,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
 
+interface NavLink {
+    name: string;
+    href: string;
+}
+
 export default function Navbar() {
-    const [openMobileMenu, setOpenMobileMenu] = useState(false);
+    const [openMobileMenu, setOpenMobileMenu] = useState<boolean>(false);
 
     // Prevent background scroll when mobile menu is open
     useEffect(() => {
@@ -26,7 +31,7 @@ export default function Navbar() {
     return (
         <header className="fixed top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md transition-colors">
             <nav className="flex items-center justify-between px-6 lg:px-24 xl:px-32 py-4">
-                
+
                 {/* LEFT: Logo */}
                 <Link
                     href="#home"
@@ -47,7 +52,7 @@ export default function Navbar() {
 
                 {/* CENTER: Desktop Nav */}
                 <div className="hidden md:flex items-center gap-8 lg:gap-10">
-                    {navLinks.map((link) => (
+                    {(navLinks as NavLink[]).map((link) => (
                         <Link
                             key={link.name}
                             href={link.href}
@@ -86,7 +91,7 @@ export default function Navbar() {
                         : "opacity-0 -translate-x-full pointer-events-none"
                 }`}
             >
-                {navLinks.map((link) => (
+                {(navLinks as NavLink[]).map((link) => (
                     <Link
                         key={link.name}
                         href={link.href}

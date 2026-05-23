@@ -1,14 +1,9 @@
-'use client'
-
 import Link from "next/link";
 import { FaqSection } from "@/component/FaqSection"
-import Marquee from "react-fast-marquee";
-import { marqueeData } from '../data/marqueeData'
 import { howToUseData } from '../data/featuresData'
 import SectionTitle from "@/component/SectionTitle"
 import Navbar from "@/component/Navbar"
 import Footer from "@/component/Footer"
-import React from "react";
 
 export default function Page() {
 
@@ -17,12 +12,16 @@ export default function Page() {
       <Navbar />
 
       {/* Hero section — gradient bg scoped here so it doesn't repaint the whole page on scroll */}
-      <section className="w-full flex flex-col items-center px-4 pb-24 bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-no-repeat bg-cover bg-top">
+      <section className="relative w-full flex flex-col items-center px-4 pb-40 bg-[url('/assets/light-hero-gradient.svg')] dark:bg-[url('/assets/dark-hero-gradient.svg')] bg-no-repeat bg-cover bg-top">
         <CommunityBadge />
         <HeroText />
         <CTAButton />
-        <SubHeader />
-        <CompaniesMarquee />
+
+        {/* Soft fade so the hero gradient blends into the page background instead of a hard cut */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-linear-to-b from-transparent to-white dark:to-gray-950"
+        />
       </section>
 
       <Section />
@@ -61,12 +60,17 @@ function CommunityBadge() {
 
 function HeroText() {
   return (
-    <h1 className="mt-2 text-5xl/15 md:text-[64px]/19 font-semibold max-w-3xl">
-      Launch better products with{" "}
-      <span className="bg-linear-to-r from-[#923FEF] dark:from-[#C99DFF] to-[#C35DE8] dark:to-[#E1C9FF] bg-clip-text text-transparent">
-        real testers
-      </span>
-    </h1>
+    <>
+      <h1 className="mt-2 text-5xl/15 md:text-[64px]/19 font-semibold max-w-3xl">
+        Launch better products with{" "}
+        <span className="bg-linear-to-r from-[#923FEF] dark:from-[#C99DFF] to-[#C35DE8] dark:to-[#E1C9FF] bg-clip-text text-transparent">
+          real testers
+        </span>
+      </h1>
+      <p className="mt-5 text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-xl">
+        Drop your web app&apos;s URL. Real humans test it, report bugs with screenshots, and you get notified instantly.
+      </p>
+    </>
   );
 }
 
@@ -82,51 +86,26 @@ function CTAButton() {
   );
 }
 
-function SubHeader() {
-  return (
-    <h3 className="text-base text-center text-slate-400 mt-28 pb-14 font-bold">
-      Backed by a community of passionate testers & founders
-    </h3>
-  );
-}
-
-function CompaniesMarquee() {
-  return (
-    <Marquee className="max-w-5xl mx-auto" speed={35}>
-      <div className="flex items-center justify-between gap-15">
-        {marqueeData.map((item, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-evenly gap-2 px-3 py-1 rounded-full"
-          >
-            <div className="shrink-0">
-              {React.cloneElement(item.icon, { size: 24 })}
-            </div>
-            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {item.name}
-            </span>
-          </div>
-        ))}
-      </div>
-    </Marquee>
-  );
-}
-
 function Section() {
-  return <div id="how-to-use">
+  return <section id="how-to-use" className="w-full py-20">
     <SectionTitle
-      title="How to Use CrowdTest "
+      title="How to Use CrowdTest"
       subtitle="Share your link, let testers explore, and receive clear bug reports"
     />
-    <div className="flex flex-wrap items-center justify-center gap-6 md:gap-4 mt-10 px-6 md:px-16 lg:px-24 xl:px-32">
+    <div className="flex flex-wrap items-stretch justify-center gap-6 md:gap-4 mt-10 px-6 md:px-16 lg:px-24 xl:px-32">
       {howToUseData.map((feature, index) => (
-        <div key={index} className="p-6 rounded-xl space-y-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/20 max-w-80 md:max-w-66">
-          <feature.icon className="text-purple-500 size-8 mt-4" strokeWidth={1.3} />
-          <h1 className="text-base font-medium">{feature.step}</h1>
-          <h3 className="text-base font-medium">{feature.title}</h3>
-          <p className="text-slate-400 line-clamp-2">{feature.description}</p>
+        <div key={index} className="relative p-6 pt-8 rounded-xl space-y-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/20 max-w-80 md:max-w-66 text-left">
+          <span
+            aria-hidden="true"
+            className="absolute -top-3 left-6 inline-flex items-center justify-center size-7 rounded-full bg-purple-600 text-white text-xs font-semibold shadow-sm"
+          >
+            {String(feature.step).padStart(2, "0")}
+          </span>
+          <feature.icon className="text-purple-500 size-8" strokeWidth={1.3} />
+          <h3 className="text-base font-semibold">{feature.title}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{feature.description}</p>
         </div>
       ))}
     </div>
-  </div>
+  </section>
 }

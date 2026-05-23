@@ -1,9 +1,14 @@
-import { Bug, Rocket, CheckCircle, AlertTriangle, Clipboard } from "lucide-react";
+import { Circle } from "lucide-react";
 
+// Color matches severity:
+//   #ef4444 = High, #f59e0b = Medium, #10b981 = Low
 export const marqueeData = [
-  { name: "Bug Found", icon: <Bug size={12} color="#ef4444" /> },
-  { name: "Critical Issue", icon: <AlertTriangle size={12} color="#f59e0b" /> },
-  { name: "UX Feedback", icon: <Clipboard size={12} color="#10b981" /> },
-  { name: "Test Completed", icon: <CheckCircle size={12} color="#3b82f6" /> },
-  { name: "Feature Verified", icon: <Rocket size={12} color="#3e2cf6" /> },
+  { name: "Broken signup form", icon: <Circle size={10} fill="#ef4444" color="#ef4444" /> },
+  { name: "Mobile layout overflow", icon: <Circle size={10} fill="#f59e0b" color="#f59e0b" /> },
+  { name: "Typo on pricing page", icon: <Circle size={10} fill="#10b981" color="#10b981" /> },
+  { name: "Image not loading", icon: <Circle size={10} fill="#ef4444" color="#ef4444" /> },
+  { name: "Confusing CTA copy", icon: <Circle size={10} fill="#f59e0b" color="#f59e0b" /> },
+  { name: "Tooltip cut off", icon: <Circle size={10} fill="#10b981" color="#10b981" /> },
+  { name: "404 on footer link", icon: <Circle size={10} fill="#ef4444" color="#ef4444" /> },
+  { name: "Slow page load", icon: <Circle size={10} fill="#f59e0b" color="#f59e0b" /> },
 ];
