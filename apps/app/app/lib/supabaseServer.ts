@@ -1,10 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-export async function createSupabaseServer(req: Request) {
+export async function createSupabaseServer(req: Request | null) {
   const cookieStore = await cookies()
 
-  const authHeader = req.headers.get('authorization')
+  const authHeader = req?.headers.get('authorization')
   const token = authHeader?.replace('Bearer ', '')
 
   return createServerClient(
