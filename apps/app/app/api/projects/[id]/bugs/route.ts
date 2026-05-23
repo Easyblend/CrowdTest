@@ -125,47 +125,52 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     }
   }
 
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { lastActivityAt: new Date() },
+  });
+
   // -------------------------------
   // 📊 4. AUDIT
   // -------------------------------
   await logAudit({
-  actorId: dbUser.id,
-  actorSnapshot: {
-    id: dbUser.id,
-    name: dbUser.name,
-    email: dbUser.email,
-    role: dbUser.role,
-  },
+    actorId: dbUser.id,
+    actorSnapshot: {
+      id: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+    },
 
-  ownerId: project.createdBy,
-  ownerSnapshot: project.user
-    ? {
+    ownerId: project.createdBy,
+    ownerSnapshot: project.user
+      ? {
         id: project.user.id,
         name: project.user.name,
         email: project.user.email,
         role: project.user.role,
       }
-    : null,
+      : null,
 
-  projectId: project.id,
+    projectId: project.id,
 
-  action: "BUG_CREATED",
-  entityType: "bug",
-  entityId: bug.id,
+    action: "BUG_CREATED",
+    entityType: "bug",
+    entityId: bug.id,
 
-  metadata: {
-    title,
-    severity,
-    description,
-    project: {
-      id: project.id,
-      name: project.name,
+    metadata: {
+      title,
+      severity,
+      description,
+      project: {
+        id: project.id,
+        name: project.name,
+      },
+      screenshot: upload?.url ?? null,
     },
-    screenshot: upload?.url ?? null,
-  },
 
-  req,
-});
+    req,
+  });
 
   // -------------------------------
   // 📧 5. EMAIL

@@ -50,6 +50,7 @@ model Project {
   createdAt   DateTime @default(now())
   bugs        Bug[]
   user        User     @relation(fields: [createdBy], references: [id])
+  lastActivityAt DateTime @default(now())
 }
 
 model Waitlist {

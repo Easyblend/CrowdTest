@@ -67,6 +67,7 @@ if (!dbUser) {
       email: user.email!,
       name: user.user_metadata?.name || "Unnamed User",
       role: "DEV",
+      lastActivityAt: new Date(),
     }
   })
 }
@@ -79,7 +80,14 @@ if (!dbUser) {
       description,
       createdBy: dbUser.id,
     },
-    include: { bugs: true, user: true },
+   include: {
+  bugs: {
+    select: {
+      id: true,
+      status: true,
+    }
+  }
+}
   });
 
   await logAudit({
