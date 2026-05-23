@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromRequest } from '@/lib/auth';
 import { createSupabaseServer } from '@/lib/supabaseServer';
 
 export const runtime = 'nodejs';
@@ -22,7 +21,27 @@ Rules:
 - Description: 2-6 short sentences or bullet points. If possible, structure it as: what happened, expected behavior, and (only if the user mentioned them) steps to reproduce.
 - Use plain, neutral English. No marketing language, no emojis, no apologies.
 - If the input is empty or nonsensical, return it back cleaned up minimally.
-- Respond with STRICT JSON only, matching: {"title": string, "description": string}. No markdown, no commentary.`;
+- Avoid vague impact statements like "could reduce engagement" unless explicitly mentioned by the user.
+- Prefer concrete UI/UX observations over speculative business impact.
+- Respond with STRICT JSON only, matching: {"title": string, "description": string}. No markdown, no commentary.;
+
+Examples:
+
+Input:
+Title: favicon missing
+Description: website has no favicon in browser
+
+Output:
+{"title":"Web App: Missing favicon","description":"The web application does not display a favicon in the browser tab. The browser currently shows the default browser icon instead of the application's branding."}
+
+Input:
+Title: login button broken
+Description: clicking login does nothing
+
+Output:
+{"title":"Authentication: Login button not responding","description":"Clicking the login button does not trigger any action. The user remains on the same page after interacting with the button."}
+
+`;
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
@@ -33,9 +52,6 @@ export async function POST(req: NextRequest) {
   
     if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
