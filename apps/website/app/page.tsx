@@ -1,6 +1,5 @@
 'use client'
 
-import Image from "next/image";
 import Link from "next/link";
 import { FaqSection } from "@/component/FaqSection"
 import Marquee from "react-fast-marquee";
@@ -34,30 +33,24 @@ export default function Page() {
 // Move sections into small components to keep Page server-only
 
 function CommunityBadge() {
+  const avatars = [
+    { initials: "🧑‍🚀", className: "bg-purple-500 text-white" },
+    { initials: "MJ", className: "bg-pink-500 text-white" },
+    { initials: "👨‍🎨", className: "bg-indigo-500 text-white" },
+  ];
+
   return (
     <div id="home" className="flex flex-wrap items-center justify-center gap-3 p-1.5 pr-4 mt-44 rounded-full border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-600/20">
       <div className="flex items-center -space-x-3">
-        <Image
-          className="size-7 rounded-full"
-          src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=50&auto=format"
-          height={50}
-          width={50}
-          alt="User 1"
-        />
-        <Image
-          className="size-7 rounded-full"
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=50&auto=format"
-          height={50}
-          width={50}
-          alt="User 2"
-        />
-        <Image
-          className="size-7 rounded-full"
-          src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=50&h=50&auto=format&fit=crop"
-          height={50}
-          width={50}
-          alt="User 3"
-        />
+        {avatars.map((a) => (
+          <div
+            key={a.initials}
+            aria-hidden="true"
+            className={`size-7 rounded-full flex items-center justify-center text-[10px] font-semibold ring-2 ring-white dark:ring-slate-900 ${a.className}`}
+          >
+            {a.initials}
+          </div>
+        ))}
       </div>
       <p className="text-xs">Catch bugs before your users do</p>
     </div>
