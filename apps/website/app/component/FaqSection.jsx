@@ -42,20 +42,20 @@ export const FaqSection = () => {
                                 <ChevronDown
                                     size={18}
                                     aria-hidden="true"
-                                    className={`shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                                    className={`shrink-0 transition-transform duration-300 ease-out ${isOpen ? "rotate-180" : ""}`}
                                 />
                             </button>
                             <div
                                 id={panelId}
                                 role="region"
                                 aria-labelledby={buttonId}
-                                hidden={!isOpen}
+                                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
                             >
-                                {isOpen && (
+                                <div className="overflow-hidden min-h-0">
                                     <p className="text-sm text-slate-600 dark:text-slate-300 pb-4">
                                         {faq.answer}
                                     </p>
-                                )}
+                                </div>
                             </div>
                         </div>
                     );
