@@ -68,6 +68,7 @@ if (!dbUser) {
       name: user.user_metadata?.name || "Unnamed User",
       role: "DEV",
       lastActivityAt: new Date(),
+      status: "ACTIVE",
     }
   })
 }

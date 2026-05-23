@@ -127,7 +127,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
   await prisma.project.update({
     where: { id: projectId },
-    data: { lastActivityAt: new Date() },
+    data: { lastActivityAt: new Date(), status: "ACTIVE" },
   });
 
   // -------------------------------

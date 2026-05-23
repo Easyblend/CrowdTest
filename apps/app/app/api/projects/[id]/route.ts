@@ -75,6 +75,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const updatedData: any = {};
 
   updatedData.lastActivityAt = new Date(); // Update last activity when project name changes
+  updatedData.status =  "ACTIVE"; 
   if (data.name !== undefined) {
     updatedData.name = data.name;
     updatedData.slug = slugify(data.name, { lower: true, strict: true });
