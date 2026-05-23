@@ -4,48 +4,65 @@ import { escapeHtml } from "./sendBugReminderEmail";
 type Level = "week1" | "week2" | "week3";
 
 interface Props {
-  email: string;
-  name?: string;
-  projectName: string;
-  level: Level;
-  bugCount: number;
-  lastActivityAt: Date;
+    email: string;
+    name?: string;
+    projectName: string;
+    level: Level;
+    bugCount: number;
+    lastActivityAt: Date;
 }
 
 export async function sendProjectInactivityEmail({
-  email,
-  name,
-  projectName,
-  level,
-  bugCount,
-  lastActivityAt,
+    email,
+    name,
+    projectName,
+    level,
+    bugCount,
+    lastActivityAt,
 }: Props) {
-  const templates = {
-    week1: {
-      title: "Your project is waiting for attention",
-      color: "#f59e0b",
-      message:
-        "No recent activity detected. Your testers are still waiting for updates.",
-    },
+    const templates = {
+        week1: {
+            title: "Your project has pending tester activity",
+            color: "#f59e0b",
+            message: `
+      Your project currently has unresolved tester activity and has not received updates recently.
 
-    week2: {
-      title: "Your project is inactive for 2 weeks",
-      color: "#f97316",
-      message:
-        "Activity has dropped significantly. Open bugs may be going unattended. Please review your project.",
-    },
+      Bugs reported by testers are still awaiting review, verification, fixes, or closure. 
+      To keep your project active on CrowdTest, please review the reported bugs and update their statuses where necessary.
 
-    week3: {
-      title: "Your project has been archived",
-      color: "#ef4444",
-      message:
-        "Extended inactivity detected. Your project has been archived. to restore it, please contact support and review your project to reactivate it.",
-    },
-  };
+      Projects that remain inactive for extended periods may eventually be archived.
+    `,
+        },
 
-  const t = templates[level];
+        week2: {
+            title: "Your project will soon be archived",
+            color: "#f97316",
+            message: `
+      Your project has remained inactive for over two weeks while bugs are still awaiting attention.
 
-  const html = `
+      If no action is taken, the project may soon be archived and testing activity will stop.
+      This means testers will no longer be able to continue validating fixes, retesting issues, or submitting additional reports.
+
+      To keep the project active, please review the reported bugs and update their statuses accordingly.
+    `,
+        },
+
+        week3: {
+            title: "Your project has been archived",
+            color: "#ef4444",
+            message: `
+      Your project has been archived due to extended inactivity while unresolved bug activity remained open.
+
+      Testing activity for this project has been paused and the project is no longer considered active on CrowdTest.
+
+      If you would like to restore the project, please contact support and continue reviewing the reported bugs.
+    `,
+        },
+    };
+
+    const t = templates[level];
+
+    const html = `
     <div style="background:#f6f7fb;padding:40px 0;font-family:Arial;">
 
       <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">
@@ -119,10 +136,10 @@ export async function sendProjectInactivityEmail({
     </div>
   `;
 
-  await transporter.sendMail({
-    from: `"CrowdTest" <${process.env.EMAIL_SENDER}>`,
-    to: email,
-    subject: `⚠️ ${projectName} inactivity alert`,
-    html,
-  });
+    await transporter.sendMail({
+        from: `"CrowdTest" <${process.env.EMAIL_SENDER}>`,
+        to: email,
+        subject: `⚠️ ${projectName} inactivity alert`,
+        html,
+    });
 }
