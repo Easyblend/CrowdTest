@@ -40,6 +40,12 @@ model Screenshot {
   bug       Bug    @relation(fields: [bugId], references: [id], onDelete: Cascade)
 }
 
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
 model Project {
   id          String   @id @default(uuid())
   name        String
@@ -51,6 +57,7 @@ model Project {
   bugs        Bug[]
   user        User     @relation(fields: [createdBy], references: [id])
   lastActivityAt DateTime @default(now())
+  status      ProjectStatus @default(ACTIVE)
 }
 
 model Waitlist {

@@ -213,7 +213,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
   await prisma.project.update({
   where: { id: bug.projectId },
-  data: { lastActivityAt: new Date() },
+  data: { lastActivityAt: new Date(), status: "ACTIVE" }, // Update last activity and set project to ACTIVE when a bug is deleted
 });
 
   await logAudit({
