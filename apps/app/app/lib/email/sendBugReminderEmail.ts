@@ -236,7 +236,7 @@ function buildEmail({
     `;
 }
 
-function escapeHtml(text: string) {
+export function escapeHtml(text: string) {
 
     return text
         .replace(/&/g, "&amp;")
