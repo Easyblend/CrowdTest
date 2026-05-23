@@ -7,6 +7,7 @@ import { marqueeData } from '../data/marqueeData'
 import { howToUseData } from '../data/featuresData'
 import SectionTitle from "@/component/SectionTitle"
 import Navbar from "@/component/Navbar"
+import Footer from "@/component/Footer"
 import React from "react";
 
 export default function Page() {
@@ -26,6 +27,7 @@ export default function Page() {
 
       <Section />
       <FaqSection />
+      <Footer />
     </div>
   );
 }
