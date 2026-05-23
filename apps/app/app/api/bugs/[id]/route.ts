@@ -118,7 +118,7 @@ if (body.status && Object.values(BugStatus).includes(body.status)) {
 
   await prisma.project.update({
   where: { id: bug.projectId },
-  data: { lastActivityAt: new Date() },
+  data: { lastActivityAt: new Date(), status: "ACTIVE" }, // Update last activity and set project to ACTIVE when a bug is updated
 });
 
   await logAudit({
