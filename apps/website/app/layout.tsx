@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://crowdtest.dev"),
   title: "CrowdTest — Human-focused app testing",
   description:
-    "Real testers. Real feedback. Catch UI/UX issues automation tools miss.",
+    "Drop your web app's URL. Real humans test it, report bugs with screenshots, and you get notified instantly.",
+  alternates: {
+    canonical: "/",
+  },
   keywords: [
     "QA testing",
     "web app testing",
