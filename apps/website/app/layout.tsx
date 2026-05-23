@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://crowdtest.dev"),
   title: "CrowdTest — Human-focused app testing",
   description:
-    "Real testers. Real feedback. Catch UI/UX issues automation tools miss.",
+    "Drop your web app's URL. Real humans test it, report bugs with screenshots, and you get notified instantly.",
+  alternates: {
+    canonical: "/",
+  },
   keywords: [
     "QA testing",
     "web app testing",
@@ -30,9 +33,9 @@ export const metadata: Metadata = {
   authors: [{ name: "CrowdTest" }],
   creator: "CrowdTest",
   openGraph: {
-    title: "CrowdTest — Human Testing for Indie Devs",
+    title: "CrowdTest — Human-focused app testing",
     description:
-      "Real testers help you find UI/UX problems, unclear flows, spelling mistakes, and more.",
+      "Drop your web app's URL. Real humans test it, report bugs with screenshots, and you get notified instantly.",
     url: "https://crowdtest.dev",
     siteName: "CrowdTest",
     images: [
@@ -40,14 +43,16 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
+        alt: "CrowdTest — Human-focused app testing",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CrowdTest — Human Testing for Indie / solo Devs",
-    description: "Real testers helping you polish your product.",
+    title: "CrowdTest — Human-focused app testing",
+    description:
+      "Drop your web app's URL. Real humans test it, report bugs with screenshots, and you get notified instantly.",
     images: ["/og-image.png"],
   },
   robots: {

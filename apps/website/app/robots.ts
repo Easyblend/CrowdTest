@@ -5,17 +5,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: [
-          '/',
-          '/waitlist',
-        ],
-        disallow: [
-          '/dashboard',
-          '/api',
-          '/admin',
-        ],
+        allow: '/',
       },
     ],
     sitemap: 'https://crowdtest.dev/sitemap.xml',
+    host: 'https://crowdtest.dev',
   };
 }
