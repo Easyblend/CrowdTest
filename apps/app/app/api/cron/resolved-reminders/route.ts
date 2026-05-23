@@ -210,6 +210,23 @@ export async function GET(req: NextRequest) {
             success: true,
             emailsSent: sentEmails.length,
             emails: sentEmails,
+            details: Object.values(grouped).map((group) => ({
+                ownerEmail: group.owner.email,
+                projectId: group.project.id,
+                projectName: group.project.name,
+                link: `https://app.crowdtest.dev/projects/${group.project.id}/bugs`,
+                buglist: group.bugs.map((b) => ({
+                    id: b.id,
+                    title: b.title,
+                    status: b.status,
+                })),
+                openBugCount: group.bugs.filter(
+                    (b) => b.status === "OPEN"
+                ).length,
+                resolvedBugCount: group.bugs.filter(
+                    (b) => b.status === "RESOLVED"
+                ).length,
+            })),
         });
 
     } catch (error) {
