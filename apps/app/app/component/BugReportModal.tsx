@@ -28,7 +28,7 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white p-8 rounded-xl max-w-md w-full shadow-xl border border-gray-200 animate-fadeIn">
-                
+
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
@@ -67,10 +67,7 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
                         onClick={handleImproveWithAI}
                         disabled={improving || submitting || (!title.trim() && !description.trim())}
                         className="px-3 py-1.5 text-sm font-semibold rounded-md bg-linear-to-r from-purple-500 to-blue-500 text-white hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition"
-                    >
-                        {improving ? 'Improving…' : '✨ Improve with AI'}
-                    </button>
-                </div>
+                    > {improving ? 'Improving…' : '✨ Improve with AI'} </button> </div>
 
                 {/* Severity */}
                 <div className={`w-full mb-6 p-3 rounded-md ${severityClasses[severity]} transition`}>
@@ -89,7 +86,7 @@ export default function BugReportModal({ onClose, onSubmit }: BugReportModalProp
                 {/* Screenshot */}
                 <div className="mb-6">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Attach Screenshot</label>
-                    <input 
+                    <input
                         type="file"
                         accept=".png,.jpg,.jpeg"
                         onChange={handleImageChange}
