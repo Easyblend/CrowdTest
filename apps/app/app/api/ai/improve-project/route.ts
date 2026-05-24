@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabaseServer';
+import * as Sentry from "@sentry/nextjs";
 
 export const runtime = 'nodejs';
 
@@ -61,7 +62,12 @@ export async function POST(req: NextRequest) {
 
   try {
     body = await req.json();
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, {
+  tags: {
+    route: "/api/ai/improve-project",
+  },
+});
     return NextResponse.json(
       { error: 'Invalid JSON body' },
       { status: 400 }
@@ -80,7 +86,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!url || !isValidUrl(url)) {
-    console.log('Invalid URL:', url);
+    Sentry.captureMessage("Invalid URL provided", "warning");
     return NextResponse.json(
       {
         error: 'Invalid URL. Please enter a valid website (e.g. https://example.com)'
@@ -103,6 +109,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (!jinaRes.ok) {
+      Sentry.captureException(new Error(jinaRes.statusText));
       return NextResponse.json(
         { error: 'Failed to fetch website content' },
         { status: 502 }
@@ -155,9 +162,7 @@ ${trimmedMarkdown}
 
     if (!aiRes.ok) {
       const err = await aiRes.json().catch(() => null);
-
-      console.error('Groq error:', err);
-
+      Sentry.captureException(new Error(err?.error?.message || 'Groq AI API error'));
       return NextResponse.json(
         { error: err?.error?.message || 'AI failed' },
         { status: 502 }
@@ -170,6 +175,7 @@ ${trimmedMarkdown}
       data?.choices?.[0]?.message?.content;
 
     if (!content) {
+      Sentry.captureMessage("AI returned empty response", "warning");
       return NextResponse.json(
         { error: 'Empty AI response' },
         { status: 502 }
@@ -181,6 +187,7 @@ ${trimmedMarkdown}
     try {
       parsed = JSON.parse(content);
     } catch {
+      Sentry.captureException(new Error('Failed to parse AI response as JSON'));
       return NextResponse.json(
         { error: 'AI returned invalid JSON' },
         { status: 502 }
@@ -194,8 +201,7 @@ ${trimmedMarkdown}
         .slice(0, 2000),
     });
   } catch (error) {
-    console.error('Improve project error:', error);
-
+    Sentry.captureException(error);
     return NextResponse.json(
       { error: 'Unexpected server error' },
       { status: 500 }
