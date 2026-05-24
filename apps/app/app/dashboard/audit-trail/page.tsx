@@ -50,8 +50,13 @@ export default function AuditPage() {
 
         if (!res.ok) throw new Error("Failed to fetch audit logs");
 
-        const data = await res.json();
-        setLogs(data);
+        const data: AuditLog[] = await res.json();
+        setLogs(
+          data.filter(log =>
+            !log.action.startsWith("CRON_") &&
+            !log.action.startsWith("SYSTEM_")
+          )
+        );
       } catch {
         toast.error("Failed to load activity");
       } finally {
@@ -132,9 +137,8 @@ export default function AuditPage() {
                       {/* MAIN ROW */}
                       <tr
                         onClick={() => setOpenRow(isOpen ? null : log.id)}
-                        className={`cursor-pointer transition border border-slate-700 hover:bg-slate-700/60 ${
-                          isOpen ? "bg-slate-700" : "bg-slate-800"
-                        }`}
+                        className={`cursor-pointer transition border border-slate-700 hover:bg-slate-700/60 ${isOpen ? "bg-slate-700" : "bg-slate-800"
+                          }`}
                       >
 
                         {/* ACTOR */}
@@ -245,9 +249,8 @@ function ActionBadge({ action }: { action: string }) {
 
   return (
     <span
-      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-        styles[action] || "bg-slate-600 text-slate-300"
-      }`}
+      className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[action] || "bg-slate-600 text-slate-300"
+        }`}
     >
       {action}
     </span>
