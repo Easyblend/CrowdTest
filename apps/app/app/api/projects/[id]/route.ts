@@ -9,7 +9,7 @@ interface RouteParams {
 }
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
-  const supabase = await createSupabaseServer()
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 /* ---------------- UPDATE PROJECT ---------------- */
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
-  const supabase = await createSupabaseServer()
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
@@ -136,7 +136,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
-  const supabase = await createSupabaseServer()
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },

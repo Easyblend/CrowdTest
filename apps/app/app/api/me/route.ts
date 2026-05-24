@@ -4,7 +4,7 @@ import { createSupabaseServer } from '@/lib/supabaseServer';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
-  const supabase = await createSupabaseServer()
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },

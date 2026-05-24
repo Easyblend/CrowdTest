@@ -7,7 +7,7 @@ import { logAudit } from '@/lib/audit';
 
 export async function GET(req: NextRequest) {
 
-  const supabase = await createSupabaseServer()
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 /* ---------------- CREATE PROJECT ---------------- */
 export async function POST(req: NextRequest) {
 
-  const supabase = await createSupabaseServer()
+  const supabase = await createSupabaseServer(req)
 
   const {
     data: { user },
