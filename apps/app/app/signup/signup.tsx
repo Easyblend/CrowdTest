@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import * as Sentry from '@sentry/nextjs'
 import { toast } from 'react-hot-toast'
 
 type FormData = {
@@ -53,6 +54,10 @@ export default function SignupPage() {
             }
         } catch (error) {
             toast.error('An unexpected error occurred. Please try again.')
+            Sentry.captureException(error, {
+                tags: { feature: "signup" },
+                extra: { step: "signUp" }
+            })
         } finally {
             setSubmitting(false)
         }
@@ -60,13 +65,20 @@ export default function SignupPage() {
 
     // signup with google
     const signupWithGoogle = async () => {
-        console.log(`${window.location.origin}/api/auth/callback`)
-        await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/api/auth/callback`,
-            },
-        })
+        try {
+            await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/api/auth/callback`,
+                },
+            })
+        } catch (error) {
+            toast.error('Failed to initiate Google sign-in. Please try again.')
+            Sentry.captureException(error, {
+                tags: { feature: "signup_google" },
+                extra: { step: "signInWithOAuth" }
+            })
+        }
     }
 
     return (
