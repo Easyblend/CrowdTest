@@ -15,8 +15,11 @@ interface Project {
   name: string;
   url: string;
   slug: string;
+  description?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
   bugs?: Bug[];
   createdAt: string;
+  lastActivityAt?: string;
 }
 
 interface ProjectCardProps {
@@ -25,7 +28,6 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ project, setEditingProject }: ProjectCardProps) {
-
   const bugs = project.bugs ?? [];
 
   const openBugs = bugs.filter(b => b.status === 'OPEN');
@@ -33,87 +35,154 @@ export default function ProjectCard({ project, setEditingProject }: ProjectCardP
 
   const createdDate = new Date(project.createdAt).toLocaleDateString();
 
+  const lastActivityDate = project.lastActivityAt
+    ? new Date(project.lastActivityAt)
+    : null;
+
+  const daysAgo = lastActivityDate
+    ? Math.floor((Date.now() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const status = project.status ?? 'ACTIVE';
+
+  // 🎯 STATE STYLES
+  const stateStyles = {
+    ACTIVE: {
+      card: 'border-slate-200 bg-white',
+      text: 'text-slate-900',
+      subtext: 'text-slate-600',
+      muted: 'text-slate-500',
+      badge: 'bg-green-100 text-green-700'
+    },
+    INACTIVE: {
+      card: 'border-amber-100 bg-amber-50/30',
+      text: 'text-slate-800',
+      subtext: 'text-slate-500',
+      muted: 'text-slate-400',
+      badge: 'bg-amber-100 text-amber-700'
+    },
+    ARCHIVED: {
+      card: 'border-slate-100 bg-slate-50',
+      text: 'text-slate-500',
+      subtext: 'text-slate-400',
+      muted: 'text-slate-400',
+      badge: 'bg-slate-200 text-slate-600'
+    }
+  } as const;
+
+  const s = stateStyles[status];
+
+  // 🎯 SMART BANNERS
+  const banner =
+    status === 'ARCHIVED'
+      ? {
+          text: 'This project was archived due to prolonged inactivity.',
+          style: 'bg-slate-100 text-slate-600 border-slate-200'
+        }
+      : status === 'INACTIVE'
+      ? {
+          text: `This project needs attention — Inactive for ${daysAgo} days with ${openBugs.length} open issue(s).`,
+          style: 'bg-amber-50 text-amber-700 border-amber-200'
+        }
+      : null;
+
   return (
-    <div className="
-      group relative rounded-2xl border border-slate-200 bg-white
-      p-6 shadow-sm transition-all duration-300
-      hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-300
-    ">
+    <div className={`
+      group relative rounded-2xl border p-6 shadow-sm
+      transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg
+      ${s.card}
+      ${status === 'ARCHIVED' ? 'opacity-90' : ''}
+    `}>
+
+      {/* 🔔 BANNER */}
+      {banner && (
+        <div className={`
+          mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium
+          ${banner.style}
+        `}>
+          <span className="h-2 w-2 rounded-full bg-current opacity-60" />
+          {banner.text}
+        </div>
+      )}
 
       {/* HEADER */}
-      <Link href={`/dashboard/project/${project.id}`} className="block">
+      <div className="flex items-start justify-between gap-4">
 
-        <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
 
-          {/* TITLE */}
-          <div className="min-w-0">
-
-            <h2 className="
-              text-base font-semibold text-slate-900
-              tracking-tight
-            ">
+          {/* TITLE + STATUS */}
+          <div className="flex items-center gap-2">
+            <h2 className={`text-base font-semibold tracking-tight ${s.text}`}>
               {project.name}
             </h2>
 
-            {/* META ROW (clean separation) */}
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+            <span className={`
+              inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+              ${s.badge}
+            `}>
+              {status}
+            </span>
+          </div>
 
-              <div className="flex items-center gap-1">
-                <Globe className="h-3.5 w-3.5 text-slate-400" />
-                <span className="truncate max-w-[180px]">
-                  {project.url}
-                </span>
-              </div>
+          {/* DESCRIPTION */}
+          <p className={`mt-2 text-sm line-clamp-2 ${s.subtext}`}>
+            {project.description || "No description provided for this project yet."}
+          </p>
 
-              <span className="text-slate-300">•</span>
+          {/* META */}
+          <div className={`mt-3 flex flex-wrap items-center gap-3 text-xs ${s.muted}`}>
 
-              <span>
-                Created {createdDate}
+            <div className="flex items-center gap-1">
+              <Globe className="h-3.5 w-3.5 text-slate-400" />
+              <span className="truncate max-w-[180px]">
+                {project.url}
               </span>
-
             </div>
 
-          </div>
+            <span>•</span>
 
-          {/* BUG BADGE (clean chip) */}
-          <div className="
-            flex items-center gap-1
-            rounded-full bg-slate-100
-            px-2.5 py-1 text-xs font-medium
-            text-slate-700
-          ">
-            <Bug className="h-3.5 w-3.5 text-slate-500" />
-            {bugs.length}
-          </div>
+            <span>Created {createdDate}</span>
 
+            {daysAgo !== null && (
+              <>
+                <span>•</span>
+                <span>
+                  {daysAgo === 0 ? "Active today" : `Active ${daysAgo}d ago`}
+                </span>
+              </>
+            )}
+
+          </div>
         </div>
 
-        {/* STATS */}
-        <div className="mt-5 grid grid-cols-3 gap-3">
-
-          <div className="rounded-xl border border-slate-100 bg-slate-50/60 py-2 text-center">
-            <p className="text-[11px] text-slate-500">Open</p>
-            <p className="mt-0.5 text-sm font-semibold text-slate-900">
-              {openBugs.length}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-100 bg-slate-50/60 py-2 text-center">
-            <p className="text-[11px] text-slate-500">Resolved</p>
-            <p className="mt-0.5 text-sm font-semibold text-slate-900">
-              {resolvedBugs.length}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-100 bg-slate-50/60 py-2 text-center">
-            <p className="text-[11px] text-slate-500">Total</p>
-            <p className="mt-0.5 text-sm font-semibold text-slate-900">
-              {bugs.length}
-            </p>
-          </div>
-
+        {/* BUG BADGE */}
+        <div className={`
+          flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium
+          ${status === 'INACTIVE'
+            ? 'bg-amber-100 text-amber-800'
+            : status === 'ARCHIVED'
+            ? 'bg-slate-200 text-slate-600'
+            : 'bg-slate-100 text-red-700'}
+        `}>
+          <Bug className={`
+            h-3.5 w-3.5
+            ${status === 'INACTIVE'
+              ? 'text-amber-600'
+              : status === 'ARCHIVED'
+              ? 'text-slate-500'
+              : 'text-red-600'}
+          `} />
+          {bugs.length}
         </div>
-      </Link>
+
+      </div>
+
+      {/* BUG STATS */}
+      <div className={`mt-5 flex gap-4 text-xs ${s.muted}`}>
+        <span>{openBugs.length} open</span>
+        <span>{resolvedBugs.length} resolved</span>
+        <span>{bugs.length} total</span>
+      </div>
 
       {/* ACTIONS */}
       <div className="
@@ -121,33 +190,33 @@ export default function ProjectCard({ project, setEditingProject }: ProjectCardP
         border-t border-slate-100 pt-4
       ">
 
-        <a
-          href={project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
-            text-sm font-medium text-slate-600
-            hover:text-slate-900 transition
-          "
+        <Link
+          href={`/dashboard/project/${project.id}`}
+          className={`
+            text-sm font-medium transition
+            ${status === 'ARCHIVED'
+              ? 'text-slate-400 hover:text-slate-500'
+              : 'text-blue-600 hover:text-blue-800'}
+          `}
         >
-          Open site →
-        </a>
+          View project →
+        </Link>
 
         <button
           onClick={() => setEditingProject?.(project)}
-          className="
-            inline-flex items-center gap-1
-            rounded-lg bg-slate-900 px-3 py-1.5
-            text-sm font-medium text-white
-            hover:bg-slate-800 transition
-          "
+          className={`
+            inline-flex items-center gap-1 rounded-lg px-3 py-1.5
+            text-sm font-medium transition
+            ${status === 'ARCHIVED'
+              ? 'bg-slate-200 text-slate-500 hover:bg-slate-300'
+              : 'bg-slate-900 text-white hover:bg-slate-800'}
+          `}
         >
           <Edit className="h-4 w-4" />
           Edit
         </button>
 
       </div>
-
     </div>
   );
 }

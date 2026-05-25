@@ -68,7 +68,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Add Project Card */}
           <div
             className="bg-white border-2 border-dashed border-blue-300 rounded-xl shadow-sm p-6 flex flex-col justify-center items-center cursor-pointer hover:border-blue-500 hover:shadow-lg hover:scale-105 transition-all duration-300 group"
