@@ -24,6 +24,7 @@ export default function EditProjectModal({ onClose, onProjectUpdated, project }:
     description: project.description || '',
   });
   const [saving, setSaving] = useState(false);
+  const [improving, setImproving] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,6 +45,7 @@ export default function EditProjectModal({ onClose, onProjectUpdated, project }:
 
       const updatedProject = await res.json();
       onProjectUpdated(updatedProject);
+      toast.success('Project updated successfully');
       onClose();
     } catch (err) {
       toast.error((err as Error).message || 'An error occurred while updating the project');
@@ -51,6 +53,58 @@ export default function EditProjectModal({ onClose, onProjectUpdated, project }:
       setSaving(false);
     }
   };
+
+   const handleImproveWithAI = async () => {
+        if (!formData.url.trim()) {
+            toast.error(
+                'Enter a project URL first'
+            );
+            return;
+        }
+        try {
+            setImproving(true);
+
+            const res = await fetch(
+                '/api/ai/improve-project',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':
+                            'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: formData.url,
+                    }),
+                }
+            );
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => null);
+                throw new Error(err?.error || 'Failed to improve project');
+            }
+
+            const data = await res.json();
+
+            setFormData((prev) => ({
+                ...prev,
+                name: data.name || prev.name,
+                description:
+                    data.description ||
+                    prev.description,
+            }));
+
+            toast.success(
+                'Project details generated'
+            );
+        } catch (err) {
+            toast.error(
+                (err as Error).message ||
+                'AI generation failed'
+            );
+        } finally {
+            setImproving(false);
+        }
+    };
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
@@ -79,6 +133,24 @@ export default function EditProjectModal({ onClose, onProjectUpdated, project }:
               required
             />
           </div>
+          {/* AI BUTTON */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleImproveWithAI}
+              disabled={
+                improving ||
+                saving ||
+                !formData.url.trim()
+              }
+              className="px-3 py-2 text-sm font-semibold rounded-md bg-linear-to-r from-purple-500 to-blue-500 text-white hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition"
+            >
+              {improving
+                ? 'Analyzing...'
+                : '✨ Generate with AI'}
+            </button>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
