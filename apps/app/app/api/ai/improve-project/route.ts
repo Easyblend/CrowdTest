@@ -105,7 +105,15 @@ export async function POST(req: NextRequest) {
 
     // Fetch website markdown/content
     const jinaRes = await fetch(
-      `https://r.jina.ai/http://${normalizedUrl.replace(/^https?:\/\//, '')}`
+      `https://r.jina.ai/http://${normalizedUrl.replace(/^https?:\/\//, '')}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'text/plain',
+          // add api key
+          'Authorization': `Bearer ${process.env.JINA_API_KEY || ''}`,
+        },
+      }
     );
 
     if (!jinaRes.ok) {
