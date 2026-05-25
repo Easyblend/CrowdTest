@@ -1,87 +1,122 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
-import { FC, useState } from 'react';
-import DeleteBugModal from './DeleteBugModal';
+import { Calendar, Image as ImageIcon } from 'lucide-react';
+
+interface Screenshot {
+  id: string;
+  url: string;
+}
 
 interface Bug {
-    id: string;
-    title: string;
-    description: string;
-    severity: 'HIGH' | 'MEDIUM' | 'LOW';
-    createdAt: string;
+  id: string;
+  title: string;
+  description?: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'OPEN' | 'RESOLVED';
+  createdAt: string;
+  screenshots?: Screenshot[];
 }
 
 interface BugCardProps {
-    bug: Bug;
-    onDelete: (id: string) => void;
+  bug: Bug;
 }
 
-const BugCard: FC<BugCardProps> = ({ bug, onDelete }) => {
+export default function BugCard({ bug }: BugCardProps) {
+  const createdDate = new Date(bug.createdAt);
+  const daysOld = Math.floor(
+    (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
-    const [open, setOpen] = useState(false);
+  const severityStyles = {
+    LOW: 'bg-green-100 text-green-700',
+    MEDIUM: 'bg-amber-100 text-amber-700',
+    HIGH: 'bg-red-100 text-red-700',
+  };
 
-    const severityStyles = {
-        HIGH: 'bg-red-100 text-red-700',
-        MEDIUM: 'bg-yellow-100 text-yellow-700',
-        LOW: 'bg-green-100 text-green-700',
-    };
+  const statusStyles = {
+    OPEN: 'bg-red-50 text-red-600',
+    RESOLVED: 'bg-slate-100 text-slate-600',
+  };
 
-    return (
-        <div className="bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer">
-            <div className="flex justify-between items-start gap-3 mb-3">
-                <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-slate-900 truncate hover:text-blue-600 transition">
-                        {bug.title}
-                    </h3>
-                </div>
+  return (
+    <div className="
+      rounded-2xl border border-slate-200 bg-white
+      p-5 shadow-sm transition hover:shadow-md
+    ">
 
-                <div className="flex items-center gap-2 shrink-0">
-                    <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${severityStyles[bug.severity]}`}
-                    >
-                        {bug.severity}
-                    </span>
+      {/* HEADER */}
+      <div className="flex items-start justify-between gap-3">
 
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setOpen(true);
-                        }}
-                        className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors"
-                        aria-label="Delete bug"
-                    >
-                        <Trash2 size={18} />
-                    </button>
-                </div>
-            </div>
+        <div className="min-w-0">
 
-            <p className="text-slate-600 text-sm mb-3 line-clamp-2 leading-relaxed">
-                {bug.description}
-            </p>
+          <h3 className="text-sm font-semibold text-slate-900">
+            {bug.title}
+          </h3>
 
-            <div className="flex items-center text-xs text-slate-500 border-t border-slate-100 pt-3">
-                <span>📅</span>
-                <span className="ml-1.5">
-                    Created {new Date(bug.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                    })} • {new Date(bug.createdAt).toLocaleTimeString(undefined, {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    })}
-                </span>
-            </div>
+          {/* TAGS */}
+          <div className="mt-2 flex gap-2">
 
-            <DeleteBugModal
-                open={open}
-                onClose={() => setOpen(false)}
-                bugId={bug.id}
-                onDelete={onDelete}
-            />
+            <span className={`
+              inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+              ${severityStyles[bug.severity]}
+            `}>
+              {bug.severity}
+            </span>
+
+            <span className={`
+              inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+              ${statusStyles[bug.status]}
+            `}>
+              {bug.status}
+            </span>
+
+          </div>
         </div>
-    );
-};
+      </div>
 
-export default BugCard;
+      {/* DESCRIPTION */}
+      {bug.description && (
+        <p className="mt-3 text-sm text-slate-600 line-clamp-3">
+          {bug.description}
+        </p>
+      )}
+
+      {/* SCREENSHOTS */}
+      {bug.screenshots && bug.screenshots.length > 0 && (
+        <div className="mt-4">
+
+          <div className="mb-2 flex items-center gap-1 text-xs text-slate-500">
+            <ImageIcon className="h-3.5 w-3.5" />
+            Evidence ({bug.screenshots.length})
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto">
+            {bug.screenshots.map((shot) => (
+              <img
+                key={shot.id}
+                src={shot.url}
+                className="h-16 w-24 rounded-lg object-cover border border-slate-200"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* META */}
+      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+
+        <div className="flex items-center gap-1">
+          <Calendar className="h-3.5 w-3.5" />
+          <span>
+            {daysOld === 0 ? 'Today' : `${daysOld}d old`}
+          </span>
+        </div>
+
+        <span>
+          {createdDate.toLocaleDateString()}
+        </span>
+
+      </div>
+    </div>
+  );
+}
