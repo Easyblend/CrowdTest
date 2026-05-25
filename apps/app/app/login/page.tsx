@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import * as Sentry from '@sentry/nextjs';
+import toast from 'react-hot-toast';
 
 type FormData = {
   email: string;
@@ -29,6 +31,12 @@ export default function LoginPage() {
 
     if (error) {
       setErrorMsg(error.message)
+      Sentry.captureException(error, {
+        tags: { feature: "login_with_email" },
+        extra: { step: "signInWithPassword" }
+      })
+      setSubmitting(false)
+      return      
     } else {
       router.push('/dashboard')
     }
@@ -37,12 +45,20 @@ export default function LoginPage() {
   }
 
   const loginWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    })
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+        },
+      })
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.')
+      Sentry.captureException(error, {
+        tags: { feature: "login_with_google" },
+        extra: { step: "signInWithOAuth" }
+      })
+    }
   }
 
   return (
@@ -112,7 +128,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="w-full bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             {submitting ? 'Signing in...' : 'Sign In'}
           </button>
