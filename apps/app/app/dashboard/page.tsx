@@ -49,6 +49,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   useEffect(() => {
     (async () => {
@@ -63,6 +64,18 @@ export default function DashboardPage() {
       }
     })();
   }, []);
+
+
+  const sortedProjects = useMemo(() => {
+    return [...projects].sort((a, b) => {
+      const aTime = new Date(a.updatedAt || a.createdAt).getTime();
+      const bTime = new Date(b.updatedAt || b.createdAt).getTime();
+
+      return sortOrder === 'desc'
+        ? bTime - aTime
+        : aTime - bTime;
+    });
+  }, [projects, sortOrder]);
 
   const stats = useMemo(() => {
     const allBugs = projects.flatMap(p => p.bugs ?? []);
@@ -128,7 +141,12 @@ export default function DashboardPage() {
             <h2 className="font-mono text-xs font-semibold text-slate-500 uppercase tracking-widest">
               Active Repositories
             </h2>
-            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-blue-600">
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-mono text-blue-600 cursor-pointer"
+              onClick={() =>
+                setSortOrder(prev => (prev === 'desc' ? 'asc' : 'desc'))
+              }
+            >
               Sorted by activity <ArrowDown className="size-3" />
             </span>
           </div>
@@ -148,7 +166,7 @@ export default function DashboardPage() {
               </div>
             </button>
 
-            {projects.map(p => {
+            {sortedProjects.map(p => {
               return (
                 <ProjectCard key={p.id} project={p} setEditingProject={setEditingProject} />
               );
