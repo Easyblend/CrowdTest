@@ -23,11 +23,11 @@ export async function GET(req: NextRequest) {
 
     try {
 
-        // 🐞 Fetch OPEN + RESOLVED bugs
+        // 🐞 Fetch OPEN + IN_PROGRESS bugs
         const bugs = await prisma.bug.findMany({
             where: {
                 status: {
-                    in: ["OPEN", "RESOLVED"],
+                    in: ["OPEN", "IN_PROGRESS"],
                 },
 
                 // 🚨 Only fetch bugs whose project has a valid owner
@@ -131,8 +131,8 @@ export async function GET(req: NextRequest) {
                 (bug) => bug.status === "OPEN"
             );
 
-            const resolvedBugs = group.bugs.filter(
-                (bug) => bug.status === "RESOLVED"
+            const inProgressBugs = group.bugs.filter(
+                (bug) => bug.status === "IN_PROGRESS"
             );
 
             await sendBugReminderEmail({
@@ -149,7 +149,7 @@ export async function GET(req: NextRequest) {
                     title: bug.title,
                 })),
 
-                resolvedBugs: resolvedBugs.map((bug) => ({
+                inProgressBugs: inProgressBugs.map((bug) => ({
                     id: bug.id,
                     title: bug.title,
                 })),
@@ -192,8 +192,8 @@ export async function GET(req: NextRequest) {
                     openBugCount:
                         openBugs.length,
 
-                    resolvedBugCount:
-                        resolvedBugs.length,
+                    inProgressBugCount:
+                        inProgressBugs.length,
 
                     bugIds: group.bugs.map(
                         (b) => b.id
@@ -223,8 +223,8 @@ export async function GET(req: NextRequest) {
                 openBugCount: group.bugs.filter(
                     (b) => b.status === "OPEN"
                 ).length,
-                resolvedBugCount: group.bugs.filter(
-                    (b) => b.status === "RESOLVED"
+                inProgressBugCount: group.bugs.filter(
+                    (b) => b.status === "IN_PROGRESS"
                 ).length,
             })),
         });
