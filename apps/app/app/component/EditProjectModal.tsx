@@ -125,7 +125,7 @@ export default function EditProjectModal({ onClose, onProjectUpdated, project }:
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Project URL</label>
             <input
-              type="text"
+              type="url"
               name="url"
               value={formData.url}
               onChange={handleChange}
