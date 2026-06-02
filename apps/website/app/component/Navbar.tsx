@@ -34,7 +34,7 @@ export default function Navbar() {
 
                 {/* LEFT: Logo */}
                 <Link
-                    href="#home"
+                    href="/"
                     className="flex items-center gap-2 hover:opacity-80 transition"
                 >
                     <Image
