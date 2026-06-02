@@ -3,8 +3,9 @@ import Link from "next/link";
 import { Github, Twitter, Mail } from "lucide-react";
 
 const productLinks = [
-    { name: "How to use", href: "#how-to-use" },
-    { name: "FAQ", href: "#faq" },
+    { name: "How to use", href: "/#how-to-use" },
+    { name: "FAQ", href: "/#faq" },
+    { name: "Blog", href: "/blog" },
     { name: "Try the App", href: "https://app.crowdtest.dev", external: true },
 ];
 
@@ -25,7 +26,7 @@ export default function Footer() {
             <div className="mx-auto max-w-6xl px-6 lg:px-12 py-12 grid gap-10 md:grid-cols-3 text-left">
                 {/* Brand */}
                 <div>
-                    <Link href="#home" className="flex items-center gap-2 hover:opacity-80 transition">
+                    <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
                         <Image
                             src="/assets/logo-light.png"
                             alt="CrowdTest logo"
