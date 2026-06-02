@@ -11,12 +11,18 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+const MAX_SCREENSHOT_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_SCREENSHOT_MIME_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+]);
+
 function uploadToCloudinary(
   buffer: Buffer
 ): Promise<{ url: string; public_id: string }> {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: "bugs" },
+      { folder: "bugs", resource_type: "image" },
       (error, result) => {
         if (error) return reject(error);
 
@@ -87,6 +93,40 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   let upload: { url: string; public_id: string } | null = null;
 
   if (file) {
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        { error: "Invalid screenshot upload" },
+        { status: 400 }
+      );
+    }
+
+    if (!ALLOWED_SCREENSHOT_MIME_TYPES.has(file.type)) {
+      return NextResponse.json(
+        {
+          error:
+            "Screenshot must be a PNG or JPEG image.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (file.size === 0) {
+      return NextResponse.json(
+        { error: "Screenshot file is empty." },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_SCREENSHOT_SIZE_BYTES) {
+      return NextResponse.json(
+        {
+          error:
+            "Screenshot must be 5 MB or smaller.",
+        },
+        { status: 400 }
+      );
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     upload = await uploadToCloudinary(buffer);
   }
