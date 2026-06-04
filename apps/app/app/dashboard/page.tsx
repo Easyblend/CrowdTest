@@ -12,7 +12,7 @@ interface Bug {
   id: string;
   title: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
-  status: 'OPEN' | 'RESOLVED';
+  status: 'OPEN' | 'RESOLVED' | 'IN_PROGRESS';
   createdAt?: string;
 }
 

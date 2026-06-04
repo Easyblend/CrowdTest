@@ -7,7 +7,7 @@ interface Bug {
   id: string;
   title: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
-  status: 'OPEN' | 'RESOLVED';
+  status: 'OPEN' | 'RESOLVED' | 'IN_PROGRESS';
 }
 
 interface Project {
@@ -30,7 +30,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ project, setEditingProject }: ProjectCardProps) {
   const bugs = project.bugs ?? [];
 
-  const openBugs = bugs.filter(b => b.status === 'OPEN');
+  const openBugs = bugs.filter(b => b.status === 'OPEN' || b.status === 'IN_PROGRESS');
   const resolvedBugs = bugs.filter(b => b.status === 'RESOLVED');
 
   const createdDate = new Date(project.createdAt).toLocaleDateString();
@@ -81,7 +81,7 @@ export default function ProjectCard({ project, setEditingProject }: ProjectCardP
         }
       : status === 'INACTIVE'
       ? {
-          text: `This project needs attention — Inactive for ${daysAgo} days with ${openBugs.length} open issue(s).`,
+          text: `This project needs attention — Inactive for ${daysAgo} days with ${openBugs.length} neglected issue(s).`,
           style: 'bg-amber-50 text-amber-700 border-amber-200'
         }
       : null;
