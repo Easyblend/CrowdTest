@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
                 bugs: {
                     some: {
                         status: {
-                            in: ["OPEN", "IN_PROGRESS", "RESOLVED"],
+                            in: ["OPEN", "IN_PROGRESS"],
                         },
                     },
                 },
