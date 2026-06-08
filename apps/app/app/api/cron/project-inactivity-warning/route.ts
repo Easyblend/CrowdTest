@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { sendProjectInactivityEmail } from "@/lib/email/sendProjectInactivityEmail";
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
     console.log("🔥 PROJECT INACTIVITY CRON HIT");
@@ -161,7 +162,10 @@ export async function GET(req: NextRequest) {
         });
     } catch (error) {
         console.error("❌ CRON ERROR:", error);
-
+        Sentry.captureException(error, {
+            tags: { feature: "project-inactivity-cron" },
+            extra: { error: (error as Error).message, message: "Error occurred in project inactivity cron job" },
+        });
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

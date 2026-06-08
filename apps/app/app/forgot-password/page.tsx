@@ -5,13 +5,14 @@ import { supabase } from '@/lib/supabaseClient'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import * as Sentry from '@sentry/nextjs'
 
 type FormData = {
   email: string
 }
 
 export default function ForgotPasswordPage() {
-const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -25,6 +26,15 @@ const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
 
     if (error) {
       setMessage(error.message)
+      Sentry.captureException(error, {
+        tags: {
+          feature: 'forgot-password',
+        },
+        extra: {
+          email: data.email,
+        },
+      })
+      toast.error(error.message)
     } else {
       setMessage('Reset link sent. Check your email (and spam folder).')
       toast.success('Reset link sent! Check your email.')
@@ -49,9 +59,9 @@ const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
             <input
               id="email"
               type="email"
-              {...register('email', { 
-            required: 'Email is required', 
-            pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' } 
+              {...register('email', {
+                required: 'Email is required',
+                pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
               })}
               placeholder="Enter your email"
               className="w-full border text-gray-950 border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
@@ -59,7 +69,7 @@ const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
             />
             {errors.email && (
               <p id="email-error" className="mt-1 text-sm text-red-600">
-            {errors.email.message}
+                {errors.email.message}
               </p>
             )}
           </div>
@@ -70,11 +80,11 @@ const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
           >
             {loading ? (
               <>
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Sending...
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Sending...
               </>
             ) : (
               'Send reset link'
@@ -83,11 +93,10 @@ const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
         </form>
 
         {message && (
-          <div className={`mt-4 p-3 rounded-lg text-sm ${
-            message.includes('error') || message.includes('Error') 
-              ? 'bg-red-50 text-red-700 border border-red-200' 
-              : 'bg-green-50 text-green-700 border border-green-200'
-          }`}>
+          <div className={`mt-4 p-3 rounded-lg text-sm ${message.includes('error') || message.includes('Error')
+            ? 'bg-red-50 text-red-700 border border-red-200'
+            : 'bg-green-50 text-green-700 border border-green-200'
+            }`}>
             {message}
           </div>
         )}

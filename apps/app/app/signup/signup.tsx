@@ -56,7 +56,7 @@ export default function SignupPage() {
             toast.error('An unexpected error occurred. Please try again.')
             Sentry.captureException(error, {
                 tags: { feature: "signup" },
-                extra: { step: "signUp" }
+                extra: { step: "signUp", data: { email: data.email, name: data.name } }
             })
         } finally {
             setSubmitting(false)
@@ -76,7 +76,7 @@ export default function SignupPage() {
             toast.error('Failed to initiate Google sign-in. Please try again.')
             Sentry.captureException(error, {
                 tags: { feature: "signup_google" },
-                extra: { step: "signInWithOAuth" }
+                extra: { step: "signInWithOAuth", provider: "google" }
             })
         }
     }

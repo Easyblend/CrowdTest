@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendBugReminderEmail } from "@/lib/email/sendBugReminderEmail";
 import { logAudit } from "@/lib/audit";
+import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
 
@@ -232,7 +233,10 @@ export async function GET(req: NextRequest) {
     } catch (error) {
 
         console.error("❌ CRON ERROR:", error);
-
+        Sentry.captureException(error, {
+            tags: { feature: "resolved-reminders-cron" },
+            extra: { error: (error as Error).message, message: "Error occurred in resolved reminders cron job" },
+        });
         return NextResponse.json(
             {
                 error: "Internal server error",
