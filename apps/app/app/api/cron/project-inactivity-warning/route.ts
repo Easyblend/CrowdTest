@@ -28,7 +28,9 @@ export async function GET(req: NextRequest) {
                         },
                     },
                 },
-                status: "ACTIVE",
+                status: {
+                    in: ["ACTIVE", "INACTIVE"],
+                },
             },
             include: {
                 user: true,
@@ -45,23 +47,37 @@ export async function GET(req: NextRequest) {
         for (const project of projects) {
             const diff = now.getTime() - project.lastActivityAt.getTime();
 
-            // WEEK 1
-            if (diff >= 7 * DAY && diff < 14 * DAY) {
+            // ACTIVE -> INACTIVE (Week 1)
+            if (
+                project.status === "ACTIVE" &&
+                diff >= 7 * DAY &&
+                diff < 14 * DAY
+            ) {
                 week1.push(project);
 
                 await prisma.project.update({
                     where: { id: project.id },
                     data: { status: "INACTIVE" },
                 });
+
+                continue;
             }
 
-            // WEEK 2
-            else if (diff >= 14 * DAY && diff < 21 * DAY) {
+            // INACTIVE reminder (Week 2)
+            if (
+                project.status === "INACTIVE" &&
+                diff >= 14 * DAY &&
+                diff < 21 * DAY
+            ) {
                 week2.push(project);
+                continue;
             }
 
-            // WEEK 3
-            else if (diff >= 21 * DAY) {
+            // INACTIVE -> ARCHIVED (Week 3)
+            if (
+                project.status === "INACTIVE" &&
+                diff >= 21 * DAY
+            ) {
                 week3.push(project);
 
                 await prisma.project.update({
