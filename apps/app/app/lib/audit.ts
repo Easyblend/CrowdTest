@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { prisma } from "@/lib/prisma";
 
 export async function logAudit({
     actorId,
@@ -21,8 +21,8 @@ export async function logAudit({
     actorSnapshot?: any;   // can be user object or null
     ownerSnapshot?: any;   // can be user object or null
     action: string;
-    entityType?: string;
-    entityId?: string;
+    entityType: string;
+    entityId: string;
     metadata?: any;
     req?: any;
 }) {
@@ -34,10 +34,12 @@ export async function logAudit({
     const userAgent =
         req?.headers?.get("user-agent") || "unknown";
 
-    const { error } = await supabase.from("AuditLog").insert({
-        actorId,
-        ownerId,
-        projectId,
+    try {
+        await prisma.auditLog.create({
+            data: {
+            actorId,
+            ownerId,
+            projectId,
 
         actorSnapshot,
         ownerSnapshot,   // project owner
@@ -48,9 +50,9 @@ export async function logAudit({
         metadata,
         ipAddress,
         userAgent,
+        },
     });
-
-    if (error) {
+    } catch (error) {
         console.error("Audit log failed:", error);
     }
 }
