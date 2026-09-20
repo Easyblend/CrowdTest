@@ -77,7 +77,7 @@ function HeroText() {
 function CTAButton() {
   return (
     <div className="flex items-center gap-4 mt-8">
-      <Link href="https://app.crowdtest.dev" target="_blank" rel="noopener noreferrer">
+      <Link href={`${process.env.SITE_URL}`} target="_blank" rel="noopener noreferrer">
         <button className="bg-purple-600 hover:bg-purple-700 transition text-white rounded-md px-6 h-11">
           Try the App
         </button>
