@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { sendProjectInactivityEmail } from "@/lib/email/sendProjectInactivityEmail";
+import { sendProjectInactivityEmail } from "@/lib/email/publishProjectInactivityEvent";
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
