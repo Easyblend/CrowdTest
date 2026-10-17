@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
+import { publishAdminNotification } from '@/lib/email/publishAdminNotification';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
@@ -127,7 +127,7 @@ if (!dbUser) {
     req,
   });
   // // Notify admin about the new project
-  sendAdminNotification({
+  await publishAdminNotification({
     subject: `New Project Submitted: ${project.name}`,
     message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
     link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard

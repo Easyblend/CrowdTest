@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { sendProjectInactivityEmail } from "@/lib/email/publishProjectInactivityEvent";
+import { publishProjectInactivityEvent } from "@/lib/email/publishProjectInactivityEvent";
 import * as Sentry from '@sentry/nextjs';
 
 export async function GET(req: NextRequest) {
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
 
         // 🟡 WEEK 1
         for (const project of week1) {
-            await sendProjectInactivityEmail({
+            await publishProjectInactivityEvent({
                 email: project.user.email,
                 name: project.user.name,
                 projectName: project.name,
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
 
         // 🟠 WEEK 2
         for (const project of week2) {
-            await sendProjectInactivityEmail({
+            await publishProjectInactivityEvent({
                 email: project.user.email,
                 name: project.user.name,
                 projectName: project.name,
@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
 
         // 🔴 WEEK 3
         for (const project of week3) {
-            await sendProjectInactivityEmail({
+            await publishProjectInactivityEvent({
                 email: project.user.email,
                 name: project.user.name,
                 projectName: project.name,

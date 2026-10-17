@@ -11,7 +11,7 @@ interface Props {
   lastActivityAt: Date;
 }
 
-export async function sendProjectInactivityEmail({
+export async function publishProjectInactivityEvent({
   email,
   name,
   projectName,

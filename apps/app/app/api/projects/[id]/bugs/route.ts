@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import cloudinary from "@/lib/cloudinary";
-import { sendBugReport } from "@/lib/email/sendBugReport";
+import { publishBugReportEvent } from "@/lib/email/publishBugReportEvent";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { logAudit } from "@/lib/audit";
 
@@ -215,7 +215,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   // -------------------------------
   // 📧 5. EMAIL
   // -------------------------------
-  sendBugReport({
+  publishBugReportEvent({
     receiverEmail: project.user.email,
     projectId: project.id,
     projectName: project.name,

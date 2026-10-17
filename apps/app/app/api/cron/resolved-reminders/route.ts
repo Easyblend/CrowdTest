@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendBugReminderEmail } from "@/lib/email/sendBugReminderEmail";
+import { publishBugReminderEvent } from "@/lib/email/publishBugReminderEvent";
 import { logAudit } from "@/lib/audit";
 import * as Sentry from '@sentry/nextjs';
 
@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
                 (bug) => bug.status === "IN_PROGRESS"
             );
 
-            await sendBugReminderEmail({
+            await publishBugReminderEvent({
                 receiverEmail: group.owner.email,
 
                 receiverName:
