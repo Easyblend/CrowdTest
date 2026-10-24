@@ -79,7 +79,6 @@ export default function ProjectPage() {
                 const res = await fetch('/api/me'); // /api/me returning { id, role }
                 if (!res.ok) throw new Error('Failed to fetch user');
                 const data: User = await res.json();
-                console.log('Fetched user:', data);
                 setUser(data);
             } catch (err) {
                 toast.error("This didn't work.")

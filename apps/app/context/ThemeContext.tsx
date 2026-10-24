@@ -11,7 +11,6 @@ export function ThemeContextProvider({ children }: { children: React.ReactNode }
         if (storedTheme) {
             setTheme(storedTheme);
             document.documentElement.classList.add(storedTheme)
-            console.log("stored theme:", storedTheme);
         } else {
             setTheme("dark");
             document.documentElement.classList.add("dark")
