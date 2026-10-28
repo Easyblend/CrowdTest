@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
 
   serverExternalPackages: ["playwright"],
 
+  outputFileTracingIncludes: {
+    "/api/scans": [
+      "./node_modules/playwright-core/**",
+      "./node_modules/playwright/**",
+    ],
+  },
+
   images: {
     remotePatterns: [
       {
