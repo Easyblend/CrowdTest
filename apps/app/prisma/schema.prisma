@@ -55,9 +55,31 @@ model Project {
   createdBy   String
   createdAt   DateTime @default(now())
   bugs        Bug[]
+  automatedFindings AutomatedFinding[]
   user        User     @relation(fields: [createdBy], references: [id])
   lastActivityAt DateTime @default(now())
   status      ProjectStatus @default(ACTIVE)
+}
+
+model AutomatedFinding {
+  id          String   @id @default(uuid())
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  category    String
+  severity    String
+  confidence  String
+
+  url         String
+  description String
+
+  request     String?
+  statusCode  Int?
+  error       String?
+  stack       String?
+
+  createdAt   DateTime @default(now())
 }
 
 model Waitlist {
