@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "prisma generate && PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium",
+    "postinstall": "prisma generate && PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium --only-shell",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
