@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page } from "playwright";
 import { Finding } from "../findings/finding";
 import {
   classifyJavaScriptError,

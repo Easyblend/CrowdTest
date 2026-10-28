@@ -1,4 +1,4 @@
-import { request } from "@playwright/test";
+import { request } from "playwright";
 import { Finding } from "../findings/finding";
 import {
   classifyBrokenLink,

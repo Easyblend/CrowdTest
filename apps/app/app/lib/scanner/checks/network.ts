@@ -1,4 +1,4 @@
-import { Page, Request, Response } from "@playwright/test";
+import { Page, Request, Response } from "playwright";
 import { Finding } from "../findings/finding";
 import {
   classifyResponse,
