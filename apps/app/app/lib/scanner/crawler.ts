@@ -1,4 +1,4 @@
-import { chromium, Browser, Page } from "@playwright/test";
+import { chromium, Browser, Page } from "playwright";
 
 import { normalizeUrl } from "./url-normalizer";
 import { collectJavaScriptErrors } from "./checks/javascript";
