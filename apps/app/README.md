@@ -269,3 +269,9 @@ This project is private and proprietary.
 ## 🙋 Support
 
 For support, questions, or feedback, visit [crowdtest.dev](https://crowdtest.dev) or join our waitlist to stay updated!
+
+
+### Migrate DB flow
+- npx prisma migrate dev --name add_automated_findings
+- npx prisma generate   
+- npx prisma migrate deploy 

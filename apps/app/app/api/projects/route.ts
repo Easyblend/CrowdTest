@@ -4,6 +4,7 @@ import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
+import { triggerScan } from '@/lib/scanner/trigger-scan';
 
 export async function GET(req: NextRequest) {
 
@@ -132,6 +133,13 @@ if (!dbUser) {
     message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
     link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
   }).catch(console.error);
+
+  triggerScan(project.id).catch((error) => {
+  console.error(
+    `Failed to trigger automated scan for project ${project.id}:`,
+    error
+  );
+});
 
   return NextResponse.json(project, { status: 201 });
 }
