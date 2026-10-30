@@ -4,7 +4,8 @@ import { sendAdminNotification } from '@/lib/email/AdminNotificationEmailProps';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
-import { triggerScan } from '@/lib/scanner/trigger-scan';
+import { publishScanRequest } from '@/lib/messaging/scan-publisher';
+import { randomUUID } from 'crypto';
 
 export async function GET(req: NextRequest) {
 
@@ -61,18 +62,18 @@ export async function POST(req: NextRequest) {
   })
 
 
-if (!dbUser) {
-  dbUser = await prisma.user.create({
-    data: {
-      auth_id: user.id,
-      email: user.email!,
-      name: user.user_metadata?.name || "Unnamed User",
-      role: "DEV",
-      lastActivityAt: new Date(),
-      status: "ACTIVE",
-    }
-  })
-}
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        auth_id: user.id,
+        email: user.email!,
+        name: user.user_metadata?.name || "Unnamed User",
+        role: "DEV",
+        lastActivityAt: new Date(),
+        status: "ACTIVE",
+      }
+    })
+  }
 
   const project = await prisma.project.create({
     data: {
@@ -82,14 +83,21 @@ if (!dbUser) {
       description,
       createdBy: dbUser.id,
     },
-   include: {
-  bugs: {
-    select: {
-      id: true,
-      status: true,
+    include: {
+      bugs: {
+        select: {
+          id: true,
+          status: true,
+        }
+      }
     }
-  }
-}
+  });
+
+  const scan = await prisma.scan.create({
+    data: {
+      projectId: project.id,
+      status: "QUEUED",
+    },
   });
 
   await logAudit({
@@ -134,12 +142,31 @@ if (!dbUser) {
     link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
   }).catch(console.error);
 
-  triggerScan(project.id).catch((error) => {
-  console.error(
-    `Failed to trigger automated scan for project ${project.id}:`,
-    error
-  );
-});
+  try {
+    await publishScanRequest({
+      eventId: randomUUID(),
+      scanId: scan.id,
+      projectId: project.id,
+      url: project.url,
+      requestedAt: new Date().toISOString(),
+    });
+
+    console.log(`Scan ${scan.id} successfully queued.`);
+  } catch (error) {
+    console.error(
+      `Failed to queue scan ${scan.id}:`,
+      error
+    );
+
+    await prisma.scan.update({
+      where: { id: scan.id },
+      data: {
+        status: "FAILED",
+        error: "Failed to publish scan request to RabbitMQ.",
+        completedAt: new Date(),
+      },
+    });
+  }
 
   return NextResponse.json(project, { status: 201 });
 }
