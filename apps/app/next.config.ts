@@ -4,8 +4,6 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  serverExternalPackages: ["playwright"],
-
   outputFileTracingIncludes: {
     "/api/scans": [
       "./node_modules/playwright-core/**",
