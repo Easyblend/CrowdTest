@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
 
     if (
         authHeader !==
-        `Bearer ${process.env.SCANNER_API_KEY}`
+        `Bearer ${process.env.SCANNER_INTERNAL_SECRET}`
     ) {
         return NextResponse.json(
             { error: "Unauthorized" },
