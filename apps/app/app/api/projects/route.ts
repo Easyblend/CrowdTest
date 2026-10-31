@@ -52,10 +52,10 @@ export async function POST(req: NextRequest) {
 
   const { name, url, description } = await req.json();
 
-  const slug = slugify(name, { lower: true });
   if (!name || !url) {
     return NextResponse.json({ error: 'Name and URL are required' }, { status: 400 });
   }
+  const slug = slugify(name, { lower: true });
 
   let dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
