@@ -327,8 +327,8 @@ function buildScanEmailHtml({
   `;
 }
 
-function escapeHtml(str: string) {
-  return str
+function escapeHtml(value: unknown) {
+  return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
