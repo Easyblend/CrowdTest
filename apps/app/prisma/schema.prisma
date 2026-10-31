@@ -55,9 +55,60 @@ model Project {
   createdBy   String
   createdAt   DateTime @default(now())
   bugs        Bug[]
+  automatedFindings AutomatedFinding[]
+  scans       Scan[]
   user        User     @relation(fields: [createdBy], references: [id])
   lastActivityAt DateTime @default(now())
   status      ProjectStatus @default(ACTIVE)
+}
+
+enum ScanStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model Scan {
+  id             String     @id @default(uuid())
+
+  projectId      String
+  project        Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  status         ScanStatus @default(QUEUED)
+
+  pagesScanned   Int        @default(0)
+  findingsCount  Int        @default(0)
+
+  findings AutomatedFinding[]
+
+  createdAt      DateTime   @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+  error          String?
+}
+
+model AutomatedFinding {
+  id          String   @id @default(uuid())
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scanId      String
+  scan        Scan     @relation(fields: [scanId], references: [id], onDelete: Cascade)
+
+  category    String
+  severity    String
+  confidence  String
+
+  url         String
+  description String
+
+  request     String?
+  statusCode  Int?
+  error       String?
+  stack       String?
+
+  createdAt   DateTime @default(now())
 }
 
 model Waitlist {

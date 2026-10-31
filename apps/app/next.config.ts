@@ -3,6 +3,14 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+
+  outputFileTracingIncludes: {
+    "/api/scans": [
+      "./node_modules/playwright-core/**",
+      "./node_modules/playwright/**",
+    ],
+  },
+
   images: {
     remotePatterns: [
       {
