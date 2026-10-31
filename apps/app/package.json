@@ -16,6 +16,7 @@
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
     "@types/nodemailer": "^7.0.4",
+    "@types/amqplib": "^0.10.8",
     "amqplib": "^2.2.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",
