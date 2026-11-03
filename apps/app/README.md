@@ -1,262 +1,211 @@
-# CrowdTest 🚀
+# CrowdTest
 
-> **Launch better products with real testers**
+CrowdTest helps teams collect bug reports and review automated checks for their projects.
 
-CrowdTest is a community-driven bug testing platform that connects developers with real testers to catch bugs before launch. Get pre-launch feedback from passionate testers and ensure your application is production-ready.
+Website: [crowdtest.dev](https://crowdtest.dev)
 
-**Website:** [crowdtest.dev](https://crowdtest.dev)
+## How It Works
 
----
+```mermaid
+flowchart TB
+  User[User] --> App
 
-## 📋 Table of Contents
+  subgraph CrowdTest
+    App[Website and API]
+    DB[(PostgreSQL)]
+    App <-->|Projects, bugs, and scan records| DB
+  end
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Environment Setup](#environment-setup)
-  - [Running Locally](#running-locally)
-- [Project Structure](#project-structure)
-- [Core Features](#core-features)
-- [Database](#database)
-- [Authentication](#authentication)
-- [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
-- [Deployment](#deployment)
+  App -->|Scan request| Queue[RabbitMQ queue]
 
----
+  subgraph ScanServices[Scan services]
+    Queue --> Worker[External scan worker]
+  end
 
-## ✨ Features
+  Worker -->|Scan results| App
+  User -->|Sign in| Auth[Supabase Auth]
+  Auth -->|Session| App
+```
 
-- **Project Management**: Developers can create projects and submit them for testing
-- **Bug Reporting**: Real testers report bugs with detailed descriptions and screenshots
-- **Waitlist Management**: Email verification and confirmation workflow
-- **User Roles**: Support for Developer, Tester, and Admin roles
-- **Cloudinary Integration**: Screenshot uploads and management
-- **Email Notifications**: Confirmation emails via Brevo SMTP
-- **Dark Mode**: Responsive UI with theme toggle
-- **JWT Authentication**: Secure user authentication and session management
+- Supabase handles sign-in and keeps the user's session.
+- The app uses Prisma to read and write PostgreSQL data.
+- Creating a project also creates a queued scan and sends a message to RabbitMQ.
+- A separate scan worker reads the message and checks the project. The worker is not included in this repository.
+- The worker sends its results to CrowdTest, where the app saves findings and sends a report email.
+- Bug screenshots are stored in Cloudinary. Email is sent through Brevo SMTP.
 
----
+## Main Parts
 
-## 🛠️ Tech Stack
+- `app/`: website pages and API routes
+- `app/api/`: server-side requests for projects, bugs, scans, and account data
+- `app/lib/`: shared code for the database, sign-in, email, images, and RabbitMQ
+- `prisma/schema.prisma`: database tables and relationships
+- `prisma/migrations/`: database change history
+- `public/`: static files such as images
 
-### Frontend
-- **Next.js 16** - React framework with App Router
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Tailwind CSS 4** - Styling
-- **React Hook Form** - Form state management
-- **React Hot Toast** - Toast notifications
-- **Lucide React** - Icon library
+## Run Locally
 
-### Backend
-- **Next.js API Routes** - Serverless functions
-- **Node.js** - Runtime
+### Requirements
 
-### Database
-- **PostgreSQL** - Relational database
-- **Prisma ORM** - Database toolkit and query builder
+- Node.js 20.9 or newer
+- npm
+- A PostgreSQL database
+- A Supabase project for sign-in
 
-### External Services
-- **Cloudinary** - Image hosting and management
-- **Brevo (Sendinblue)** - Email delivery
+RabbitMQ, Cloudinary, email, and AI services are needed only for the features that use them.
 
-### Development & Deployment
-- **ESLint** - Code linting
-- **Vercel** - Hosting and deployment
+### Setup
 
----
+1. Install packages:
 
-## 🚀 Getting Started
+   ```bash
+   npm install
+   ```
 
-### Prerequisites
+2. Create `.env.local` in this folder. Add the values for the services you use:
 
-- **Node.js** 18+ and **npm** (or yarn, pnpm, bun)
-- **PostgreSQL** database (local or cloud)
-- Environment variables configured (see Environment Setup)
+   ```env
+   DATABASE_LIVE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
+   NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 
-### Installation
+   # Needed to queue automated scans
+   RABBITMQ_URL=amqps://USER:PASSWORD@HOST/VHOST
+   SCANNER_INTERNAL_SECRET=replace-with-a-long-random-secret
 
-1. Clone the repository:
+   # Needed for project and scan emails
+   BREVO_SMTP_USER=YOUR_SMTP_USER
+   BREVO_SMTP_PASS=YOUR_SMTP_PASSWORD
+   EMAIL_SENDER=YOUR_VERIFIED_SENDER_EMAIL
+   SITE_URL=http://localhost:3000
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+   # Needed for bug screenshot uploads
+   CLOUDINARY_CLOUD_NAME=YOUR_CLOUD_NAME
+   CLOUDINARY_API_KEY=YOUR_API_KEY
+   CLOUDINARY_API_SECRET=YOUR_API_SECRET
+
+   # Optional: AI-assisted text improvements
+   GROQ_API_KEY=YOUR_GROQ_API_KEY
+   ```
+
+   Keep real credentials out of source control. `DATABASE_LIVE_URL` must be a PostgreSQL connection string. The app adds `pgbouncer=true` when it connects.
+
+3. Apply database migrations:
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+4. Start the website:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000).
+
+To open a database browser, run `npx prisma studio`.
+
+## Sign-In
+
+Supabase Auth handles email/password and Google sign-in. After sign-in, CrowdTest matches the Supabase account to a `User` row in PostgreSQL. Dashboard and admin pages require a signed-in user. Set up any sign-in providers you plan to use in the Supabase project.
+
+## API Routes
+
+Routes that change or show a user's data require a valid Supabase session, unless noted otherwise.
+
+| Route | What it does |
+| --- | --- |
+| `GET /api/projects` | List the signed-in user's projects |
+| `POST /api/projects` | Create a project and queue an automated scan |
+| `GET /api/projects/[id]` | Get a project |
+| `POST /api/projects/[id]/bugs` | Submit a bug report; accepts form data and an optional screenshot |
+| `GET /api/bugs/[id]` | Get a bug report |
+| `GET /api/me` | Get the signed-in user's account |
+| `GET /api/audit` | Read audit events |
+| `POST /api/ai/improve-bug` | Improve bug report text with AI |
+| `POST /api/ai/improve-project` | Improve project text with AI |
+| `GET /api/auth/callback` | Finish Supabase sign-in |
+| `POST /api/internal/scans/result` | Receive scan results; requires the scanner secret |
+| `GET /api/cron/resolved-reminders` | Send reminders for resolved bugs; requires the cron secret |
+| `GET /api/cron/project-inactivity-warning` | Send project inactivity emails; requires the cron secret |
+
+## Request Examples
+
+### Create a project
+
+Send JSON to `POST /api/projects` with a signed-in session:
+
+```json
+{
+  "name": "Shop Demo",
+  "url": "https://shop.example.com",
+  "description": "A demo online shop"
+}
+```
+
+The app creates the project and a scan record. It then sends this message to the RabbitMQ queue named `scan-requests`:
+
+```json
+{
+  "eventId": "a-generated-uuid",
+  "scanId": "scan-id-from-the-database",
+  "projectId": "project-id-from-the-database",
+  "url": "https://shop.example.com",
+  "requestedAt": "2026-10-31T12:00:00.000Z"
+}
+```
+
+### Send scan results
+
+The scan worker posts to `POST /api/internal/scans/result` with this header:
+
+```text
+Authorization: Bearer YOUR_SCANNER_INTERNAL_SECRET
+```
+
+Successful scan body:
+
+```json
+{
+  "success": true,
+  "scanId": "scan-id-from-the-queue-message",
+  "projectId": "project-id-from-the-queue-message",
+  "startedAt": "2026-10-31T12:01:00.000Z",
+  "pagesScanned": 12,
+  "findings": [
+    {
+      "category": "broken-link",
+      "severity": "medium",
+      "confidence": "high",
+      "url": "https://shop.example.com/cart",
+      "description": "The checkout link returned an error.",
+      "request": "GET /cart",
+      "statusCode": 404
+    }
+  ]
+}
+```
+
+Each finding needs `category`, `severity`, `confidence`, `url`, and `description`. `request`, `statusCode`, `error`, and `stack` are optional. The app looks up the project owner itself; the worker does not need to send an email address or project name.
+
+For a failed scan, send `success: false`, the `scanId`, the `projectId`, and an `error` message. The app marks that scan as failed.
+
+## Database Records
+
+The main records are users, projects, bug reports, screenshots, scans, scan findings, and audit events. The database also has waitlist records, but there is no waitlist API route in this app.
+
+## Checks and Deployment
+
+Run the code checks with:
+
 ```bash
-git clone https://github.com/Easyblend/CrowdTest.git
-cd CrowdTest
+npm run lint
+npm run build
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
-
-### Environment Setup
-
-Create a `.env.local` file in the root directory:
-
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/crowdtest
-
-# JWT Secret
-JWT_SECRET=your_jwt_secret_key_here
-
-# Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Email (Brevo)
-BREVO_SMTP_USER=your_brevo_email
-BREVO_SMTP_PASS=your_brevo_password
-
-# Site URL
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
-### Database Setup
-
-1. Run migrations:
-```bash
-npx prisma migrate dev
-```
-
-2. (Optional) Open Prisma Studio to view data:
-```bash
-npx prisma studio
-```
-
-### Running Locally
-
-Start the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## 📁 Project Structure
-
-```
-├── app/
-│   ├── api/                    # API routes
-│   │   ├── auth/              # Authentication endpoints
-│   │   ├── admin/             # Admin operations
-│   │   ├── projects/          # Project management
-│   │   ├── bugs/              # Bug reporting
-│   │   ├── me/                # User profile
-│   │   └── waitlist/          # Waitlist management
-│   ├── component/             # Reusable components
-│   ├── dashboard/             # Dashboard pages
-│   ├── login/                 # Login page
-│   ├── signup/                # Signup page
-│   ├── waitlist/              # Waitlist pages
-│   ├── lib/                   # Utilities
-│   └── globals.css            # Global styles
-├── context/                   # React Context providers
-├── prisma/
-│   ├── schema.prisma          # Database schema
-│   └── migrations/            # Database migrations
-└── public/                    # Static assets
-```
-
----
-
-## 🎯 Core Features
-
-### For Developers
-- Create and manage projects
-- Submit projects for beta testing
-- Track bug reports with detailed information
-- Download or view test reports
-
-### For Testers
-- Join the waitlist for early access
-- Browse available projects to test
-- Report bugs with screenshots
-- Contribute to product quality
-
-### For Admins
-- Manage users and roles
-- Monitor platform activity
-- Update token management
-
----
-
-## 🗄️ Database
-
-The project uses **PostgreSQL** with **Prisma ORM**. Key models:
-
-- **User**: Dev, Tester, and Admin accounts
-- **Project**: Projects submitted for testing
-- **Bug**: Bug reports with severity levels
-- **Screenshot**: Image uploads for bug reports
-- **Waitlist**: Email verification flow
-
----
-
-## 🔐 Authentication
-
-- JWT-based authentication
-- Email/password sign-up and login
-- Secure password hashing with bcrypt
-- Confirmation email workflow for waitlist
-
----
-
-## 📡 API Endpoints
-
-### Authentication
-- `POST /api/auth/signup` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
-
-### Projects
-- `GET /api/projects` - List projects
-- `POST /api/projects` - Create project
-- `GET /api/projects/[id]` - Get project details
-- `GET /api/projects/[id]/bugs` - Get project bugs
-
-### Bugs
-- `GET /api/bugs/[id]` - Get bug details
-- `POST /api/projects/[id]/bugs` - Report bug
-
-### Waitlist
-- `POST /api/waitlist` - Join waitlist
-- `GET /api/waitlist/confirm` - Confirm email
-
-### User
-- `GET /api/me` - Get current user profile
-
----
-
-## 🚢 Deployment
-
-### Deploy on Vercel
-
-The easiest way to deploy CrowdTest is using [Vercel](https://vercel.com):
-
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
-
-For more details, see [Next.js Deployment Docs](https://nextjs.org/docs/app/building-your-application/deploying).
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit pull requests or open issues.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+The app can be deployed to Vercel or another host that supports Next.js. Add the required environment variables to the host. Automated scans also need a reachable RabbitMQ service and a separate worker configured to read `scan-requests` and call the scan results route. Vercel cron runs the reminder routes on the schedule in `vercel.json`.
 
 ---
 

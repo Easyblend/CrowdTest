@@ -135,7 +135,9 @@ export async function POST(req: NextRequest) {
             },
             data: {
                 status: "COMPLETED",
-
+                startedAt: result.startedAt
+                    ? new Date(result.startedAt)
+                    : null,
                 pagesScanned:
                     result.pagesScanned ?? 0,
 
