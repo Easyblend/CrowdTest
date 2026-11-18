@@ -71,6 +71,7 @@ RabbitMQ, Cloudinary, email, and AI services are needed only for the features th
 
    # Needed to queue automated scans
    RABBITMQ_URL=amqps://USER:PASSWORD@HOST/VHOST
+  RABBITMQ_SCAN_QUEUE=scan-requests
    SCANNER_INTERNAL_SECRET=replace-with-a-long-random-secret
 
    # Needed for project and scan emails
@@ -145,7 +146,7 @@ Send JSON to `POST /api/projects` with a signed-in session:
 }
 ```
 
-The app creates the project and a scan record. It then sends this message to the RabbitMQ queue named `scan-requests`:
+The app creates the project and a scan record. It then sends this message to the queue named by `RABBITMQ_SCAN_QUEUE` (defaults to `scan-requests`):
 
 ```json
 {
@@ -205,7 +206,7 @@ npm run lint
 npm run build
 ```
 
-The app can be deployed to Vercel or another host that supports Next.js. Add the required environment variables to the host. Automated scans also need a reachable RabbitMQ service and a separate worker configured to read `scan-requests` and call the scan results route. Vercel cron runs the reminder routes on the schedule in `vercel.json`.
+The app can be deployed to Vercel or another host that supports Next.js. Add the required environment variables to the host. Automated scans also need a reachable RabbitMQ service and a separate worker configured to read the queue named by `RABBITMQ_SCAN_QUEUE` and call the scan results route. Vercel cron runs the reminder routes on the schedule in `vercel.json`.
 
 ---
 
