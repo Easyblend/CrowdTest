@@ -66,8 +66,8 @@ RabbitMQ, Cloudinary, email, and AI services are needed only for the features th
 
    ```env
    DATABASE_LIVE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
-   SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-   SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+   NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 
    # Needed to queue automated scans
    RABBITMQ_URL=amqps://USER:PASSWORD@HOST/VHOST
