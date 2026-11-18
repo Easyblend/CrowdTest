@@ -18,7 +18,7 @@ export async function logAudit({
     actorId?: string;
     ownerId?: string;
     projectId?: string;
-    actorSnapshot?: any;   // can be user object or null
+    actorSnapshot?: any;
     ownerSnapshot?: any;   // can be user object or null
     action: string;
     entityType: string;
