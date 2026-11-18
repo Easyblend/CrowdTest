@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
   sendAdminNotification({
     subject: `New Project Submitted: ${project.name}`,
     message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
-    link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
+    link: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
   }).catch(console.error);
 
   try {

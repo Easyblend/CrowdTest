@@ -66,8 +66,8 @@ RabbitMQ, Cloudinary, email, and AI services are needed only for the features th
 
    ```env
    DATABASE_LIVE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
-   NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+   SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 
    # Needed to queue automated scans
    RABBITMQ_URL=amqps://USER:PASSWORD@HOST/VHOST
@@ -78,7 +78,6 @@ RabbitMQ, Cloudinary, email, and AI services are needed only for the features th
    BREVO_SMTP_USER=YOUR_SMTP_USER
    BREVO_SMTP_PASS=YOUR_SMTP_PASSWORD
    EMAIL_SENDER=YOUR_VERIFIED_SENDER_EMAIL
-   SITE_URL=http://localhost:3000
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
    # Needed for bug screenshot uploads
@@ -92,19 +91,19 @@ RabbitMQ, Cloudinary, email, and AI services are needed only for the features th
 
    Keep real credentials out of source control. `DATABASE_LIVE_URL` must be a PostgreSQL connection string. The app adds `pgbouncer=true` when it connects.
 
-3. Apply database migrations:
+1. Apply database migrations:
 
    ```bash
    npx prisma migrate dev
    ```
 
-4. Start the website:
+2. Start the website:
 
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000).
+3. Open [http://localhost:3000](http://localhost:3000).
 
 To open a database browser, run `npx prisma studio`.
 

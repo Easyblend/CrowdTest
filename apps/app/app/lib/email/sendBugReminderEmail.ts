@@ -344,7 +344,7 @@ function buildEmail({
           ">
 
             <a
-              href="${process.env.SITE_URL}/dashboard"
+              href="${process.env.NEXT_PUBLIC_SITE_URL}/dashboard"
               style="
                 display:inline-block;
                 background:#4f46e5;
