@@ -6,4 +6,5 @@ export interface ScanRequested {
   projectId: string;
   url: string;
   requestedAt: string;
+  environment: string;
 }
