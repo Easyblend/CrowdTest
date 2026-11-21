@@ -173,11 +173,11 @@ export async function POST(req: NextRequest) {
   });
 
   // Notify admin about the new project.
-  sendAdminNotification({
-    subject: `New Project Submitted: ${project.name}`,
-    message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
-    link: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/projects/${project.id}`,
-  }).catch(console.error);
+  // sendAdminNotification({
+  //   subject: `New Project Submitted: ${project.name}`,
+  //   message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
+  //   link: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/projects/${project.id}`,
+  // }).catch(console.error);
 
   try {
     await publishScanRequest({
