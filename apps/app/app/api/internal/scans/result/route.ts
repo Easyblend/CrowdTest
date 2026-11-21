@@ -5,6 +5,20 @@ import { sendScanReport } from "@/lib/email/ScanReportEmail";
 export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization");
 
+    const receivedToken = authHeader?.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : "";
+
+    const expectedToken = process.env.SCANNER_INTERNAL_SECRET ?? "";
+
+    console.log("Scanner authentication diagnostics:", {
+        receivedTokenPresent: Boolean(receivedToken),
+        expectedTokenPresent: Boolean(expectedToken),
+        receivedTokenLength: receivedToken.length,
+        expectedTokenLength: expectedToken.length,
+        tokensMatch: receivedToken === expectedToken,
+    });
+
     if (
         authHeader !==
         `Bearer ${process.env.SCANNER_INTERNAL_SECRET}`

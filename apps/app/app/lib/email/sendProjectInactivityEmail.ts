@@ -112,7 +112,7 @@ export async function sendProjectInactivityEmail({
 
           <!-- CTA (same as bug email) -->
           <div style="margin-top:30px;text-align:center;">
-            <a href="${process.env.SITE_URL}/dashboard"
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL}/dashboard"
               style="
                 background:#4f46e5;
                 color:#fff;

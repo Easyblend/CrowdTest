@@ -150,7 +150,7 @@ function buildBugEmailHtml({
             <!-- CTA -->
             <tr>
               <td align="center" style="padding-top:35px;">
-                <a href="${process.env.SITE_URL}/dashboard/${projectId}"
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/${projectId}"
                   style="
                     background:#4f46e5;
                     color:#ffffff;

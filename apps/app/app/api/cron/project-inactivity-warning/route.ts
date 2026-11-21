@@ -158,19 +158,19 @@ export async function GET(req: NextRequest) {
                 week1: week1.map((p) => ({
                     id: p.id,
                     name: p.name,
-                    link: `${process.env.SITE_URL}/projects/${p.id}`,
+                    link: `${process.env.NEXT_PUBLIC_SITE_URL}/projects/${p.id}`,
                     ownerEmail: p.user.email,
                 })),
                 week2: week2.map((p) => ({
                     id: p.id,
                     name: p.name,
-                    link: `${process.env.SITE_URL}/projects/${p.id}`,
+                    link: `${process.env.NEXT_PUBLIC_SITE_URL}/projects/${p.id}`,
                     ownerEmail: p.user.email,
                 })),
                 week3: week3.map((p) => ({
                     id: p.id,
                     name: p.name,
-                    link: `${process.env.SITE_URL}/projects/${p.id}`,
+                    link: `${process.env.NEXT_PUBLIC_SITE_URL}/projects/${p.id}`,
                     ownerEmail: p.user.email,
                 })),
             },

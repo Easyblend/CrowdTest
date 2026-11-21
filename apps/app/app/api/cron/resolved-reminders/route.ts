@@ -215,7 +215,7 @@ export async function GET(req: NextRequest) {
                 ownerEmail: group.owner.email,
                 projectId: group.project.id,
                 projectName: group.project.name,
-                link: `${process.env.SITE_URL}/projects/${group.project.id}/bugs`,
+                link: `${process.env.NEXT_PUBLIC_SITE_URL}/projects/${group.project.id}/bugs`,
                 buglist: group.bugs.map((b) => ({
                     id: b.id,
                     title: b.title,

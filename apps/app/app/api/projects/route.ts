@@ -8,31 +8,37 @@ import { publishScanRequest } from '@/lib/messaging/scan-publisher';
 import { randomUUID } from 'crypto';
 
 export async function GET(req: NextRequest) {
-
   const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
 
   const dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
-  })
+  });
 
   if (!dbUser) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 404 }
+    );
   }
 
-  const whereClause = dbUser.role === 'ADMIN' ?
-    {} :
-    { createdBy: dbUser.id };
-
+  const whereClause = dbUser.role === 'ADMIN'
+    ? {}
+    : { createdBy: dbUser.id };
 
   const projects = await prisma.project.findMany({
     where: whereClause,
-    include: { bugs: true }, // include bug reports
+    include: { bugs: true },
   });
 
   return NextResponse.json(projects);
@@ -40,27 +46,61 @@ export async function GET(req: NextRequest) {
 
 /* ---------------- CREATE PROJECT ---------------- */
 export async function POST(req: NextRequest) {
-
-  const supabase = await createSupabaseServer(req)
+  const supabase = await createSupabaseServer(req);
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  if (!user)
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
 
   const { name, url, description } = await req.json();
 
   if (!name || !url) {
-    return NextResponse.json({ error: 'Name and URL are required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Name and URL are required' },
+      { status: 400 }
+    );
   }
+
+  // Production uses the production queue.
+  // Every other deployment uses the staging queue.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  if (!siteUrl) {
+    console.error('NEXT_PUBLIC_SITE_URL is not configured');
+
+    return NextResponse.json(
+      { error: 'Application URL is not configured' },
+      { status: 500 }
+    );
+  }
+
+  let environment: 'production' | 'staging';
+
+  try {
+    const hostname = new URL(siteUrl).hostname;
+
+    environment = hostname === 'app.crowdtest.dev'
+      ? 'production'
+      : 'staging';
+  } catch {
+    return NextResponse.json(
+      { error: 'Invalid application URL configuration' },
+      { status: 500 }
+    );
+  }
+
   const slug = slugify(name, { lower: true });
 
   let dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
-  })
-
+  });
 
   if (!dbUser) {
     dbUser = await prisma.user.create({
@@ -72,7 +112,7 @@ export async function POST(req: NextRequest) {
         lastActivityAt: new Date(),
         status: "ACTIVE",
       }
-    })
+    });
   }
 
   const project = await prisma.project.create({
@@ -115,13 +155,10 @@ export async function POST(req: NextRequest) {
       email: dbUser.email,
       role: dbUser.role,
     },
-
     projectId: project.id,
-
     action: "PROJECT_CREATED",
     entityType: "project",
     entityId: project.id,
-
     metadata: {
       snapshot: {
         name: project.name,
@@ -132,14 +169,14 @@ export async function POST(req: NextRequest) {
       },
       createdByRole: dbUser.role,
     },
-
     req,
   });
-  // // Notify admin about the new project
+
+  // Notify admin about the new project.
   sendAdminNotification({
     subject: `New Project Submitted: ${project.name}`,
     message: `User (${user.email}) submitted a new project.\n\nProject Name: ${project.name}\nURL: ${project.url}`,
-    link: `${process.env.SITE_URL}/admin/projects/${project.id}`, // optional link to admin dashboard
+    link: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/projects/${project.id}`,
   }).catch(console.error);
 
   try {
@@ -149,12 +186,16 @@ export async function POST(req: NextRequest) {
       projectId: project.id,
       url: project.url,
       requestedAt: new Date().toISOString(),
+      environment,
     });
 
-    console.log(`Scan ${scan.id} successfully queued.`);
+    console.log(
+      `[${environment}] Scan ${scan.id} successfully queued.`
+    );
+
   } catch (error) {
     console.error(
-      `Failed to queue scan ${scan.id}:`,
+      `[${environment}] Failed to queue scan ${scan.id}:`,
       error
     );
 

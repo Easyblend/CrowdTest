@@ -1,4 +1,4 @@
-import { getRabbitMQChannel } from "./rabbitmq";
+import { getRabbitMQChannel, scanQueueName } from "./rabbitmq";
 import type { ScanRequested } from "./scan-message";
 
 export async function publishScanRequest(
@@ -7,7 +7,7 @@ export async function publishScanRequest(
     const channel = await getRabbitMQChannel();
 
     channel.sendToQueue(
-        "scan-requests",
+        scanQueueName,
         Buffer.from(JSON.stringify(payload)),
         {
             persistent: true,
