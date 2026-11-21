@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import cloudinary from '@/lib/cloudinary';
 import slugify from 'slugify';
 import { createSupabaseServer } from '@/lib/supabaseServer';
 import { logAudit } from '@/lib/audit';
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   }
 
 
-  let dbUser = await prisma.user.findUnique({
+  const dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
   })
 
@@ -72,10 +73,18 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const data = await req.json();
 
-  const updatedData: any = {};
+  const updatedData: {
+    lastActivityAt: Date;
+    status: "ACTIVE";
+    name?: string;
+    slug?: string;
+    description?: string;
+    url?: string;
+  } = {
+    lastActivityAt: new Date(),
+    status: "ACTIVE",
+  };
 
-  updatedData.lastActivityAt = new Date(); // Update last activity when project name changes
-  updatedData.status =  "ACTIVE"; 
   if (data.name !== undefined) {
     updatedData.name = data.name;
     updatedData.slug = slugify(data.name, { lower: true, strict: true });
@@ -83,7 +92,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (data.description !== undefined) updatedData.description = data.description;
   if (data.url !== undefined) updatedData.url = data.url;
 
-  let dbUser = await prisma.user.findUnique({
+  const dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
   })
 
@@ -150,7 +159,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Invalid project id' }, { status: 400 });
   }
 
-  let dbUser = await prisma.user.findUnique({
+  const dbUser = await prisma.user.findUnique({
     where: { auth_id: user.id }
   })
 
@@ -164,14 +173,46 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
   const project = await prisma.project.findFirst({
     where: whereClause,
-    include: { bugs: true, user: true },
+    include: {
+      bugs: {
+        include: {
+          screenshots: true,
+        },
+      },
+      user: true,
+    },
   });
 
+  // Delete project data
   const deleted = await prisma.project.deleteMany({
     where: whereClause,
   });
 
   if (deleted.count === 0) return NextResponse.json({ error: 'Project not found or not yours' }, { status: 404 });
+
+  const publicIds = project?.bugs
+    .flatMap((bug) => bug.screenshots)
+    .map((screenshot) => screenshot.public_id)
+    .filter((publicId): publicId is string => Boolean(publicId)) ?? [];
+
+  if (publicIds.length > 0) {
+    const cleanupResults = await Promise.allSettled(
+      publicIds.map((publicId) =>
+        cloudinary.uploader.destroy(publicId, {
+          resource_type: 'image',
+        })
+      )
+    );
+
+    cleanupResults.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(
+          `Failed to delete screenshot ${publicIds[index]} from Cloudinary:`,
+          result.reason
+        );
+      }
+    });
+  }
 
   await logAudit({
     actorId: dbUser.id,
